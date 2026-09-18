@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Investigation 16 V16.3 — Ice, Albedo, and Positive Feedback</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#fff;color:#111}
+.wrap{max-width:1050px;margin:0 auto;padding:10px}
+h1{text-align:center;margin:4px 0;font-size:24px}
+.sub{text-align:center;margin:4px auto 10px;font-size:15px;max-width:900px;line-height:1.35}
+.stage{border:1.5px solid #999;padding:8px}
+svg{width:90%;height:auto;display:block;margin:0 auto}
+.controls{text-align:center;margin:10px 0}
+button{font-size:14px;font-weight:700;padding:8px 12px;margin:3px;border:2px solid #555;border-radius:7px;background:#fff;cursor:pointer}
+button:disabled{opacity:.35;cursor:default}
+.status{padding:7px 8px 5px;text-align:center;font-size:16px;font-weight:700;margin:8px auto;max-width:900px}
+.prompt{border:2px solid #777;border-radius:7px;padding:10px;margin:8px auto 0;max-width:900px;font-size:15px;line-height:1.4}
+.flow{stroke-dasharray:17 13;animation:flow 1.05s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-60}}
+.hidden{display:none}
+.check{border:2px solid #777;border-radius:7px;padding:10px;margin:12px auto 0;max-width:930px}
+.check h2{text-align:center;margin:2px 0 4px;font-size:20px}
+.check .sub{margin-bottom:4px}
+.mapping{margin:8px auto 0;max-width:860px;font-size:15px;line-height:1.4}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Investigation 16 — Ice, Albedo, and Positive Feedback</h1>
+<p class="sub">The previous animations used a simplified Earth. This model adds a new part of the Earth system: snow and ice. Take a moment to familiarize yourself with the new setup.</p>
+
+<div class="stage">
+<svg viewBox="0 0 1120 625" role="img" aria-labelledby="simTitle16 simDesc16">
+<title id="simTitle16">Earth energy system with snow and ice</title>
+<desc id="simDesc16">The model first adds reflective snow and ice, lowering stored energy, and then adds greenhouse gases. Warming melts ice, reduces reflection, increases absorbed sunlight, and amplifies warming.</desc>
+<defs>
+ <marker id="arr16gray" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L5,2.5 L0,5 Z" fill="#777"/></marker>
+ <marker id="arr16gold" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L5,2.5 L0,5 Z" fill="#d2a600"/></marker>
+ <marker id="arr16purple" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L5,2.5 L0,5 Z" fill="#8d69a5"/></marker>
+</defs>
+
+<ellipse cx="665" cy="302" rx="310" ry="260" fill="none" stroke="#777" stroke-width="3" stroke-dasharray="12 10"/>
+<text x="665" y="36" text-anchor="middle" font-size="19" font-weight="700">EARTH-SYSTEM BOUNDARY</text>
+<text x="1000" y="65" font-size="18" font-weight="700">SPACE</text>
+
+<circle cx="105" cy="300" r="62" fill="#f4d34f" stroke="#555" stroke-width="2"/>
+<text x="105" y="307" text-anchor="middle" font-size="21" font-weight="700">SUN</text>
+<path class="flow" d="M175 300 H510" fill="none" stroke="#d2a600" stroke-width="8" marker-end="url(#arr16gold)"/>
+<text x="335" y="270" text-anchor="middle" font-size="17" font-weight="700">INCOMING SOLAR ENERGY</text>
+
+<path id="reflected16" class="flow" d="M520 255 Q430 195 340 135" fill="none" stroke="#aaa" stroke-width="5" marker-end="url(#arr16gray)"/>
+<text id="reflectedLabel16" x="365" y="165" font-size="14" font-weight="700">SOME REFLECTED</text>
+<path id="absorbed16" class="flow" d="M520 315 Q575 325 610 340" fill="none" stroke="#d2a600" stroke-width="8" marker-end="url(#arr16gold)"/>
+<text id="absorbedLabel16" x="455" y="360" text-anchor="middle" font-size="14" font-weight="700">MORE ABSORBED</text>
+
+<circle cx="665" cy="335" r="132" fill="#7ea9bd" stroke="#555" stroke-width="3"/>
+<g id="ice16" class="hidden">
+ <path id="iceNorth16" d="M565 273 Q610 196 665 203 Q720 196 765 273 Q718 253 665 260 Q612 253 565 273Z" fill="#fff" stroke="#777" stroke-width="2"/>
+ <path id="iceSouth16" d="M580 412 Q625 473 665 467 Q705 473 750 412 Q710 430 665 425 Q620 430 580 412Z" fill="#fff" stroke="#777" stroke-width="2"/>
+</g>
+<text x="665" y="342" text-anchor="middle" font-size="22" font-weight="700">EARTH</text>
+
+<circle cx="665" cy="335" r="174" fill="none" stroke="#9aa5ad" stroke-width="17" opacity=".35"/>
+<text id="atmosphereLabel16" x="665" y="143" text-anchor="middle" font-size="16" font-weight="700">NATURAL GREENHOUSE ATMOSPHERE</text>
+<g id="baseGhg16" fill="#888">
+ <circle cx="770" cy="210" r="7"/><circle cx="825" cy="270" r="7"/><circle cx="815" cy="395" r="7"/>
+ <circle cx="600" cy="495" r="7"/><circle cx="505" cy="405" r="7"/><circle cx="505" cy="275" r="7"/>
+</g>
+<g id="moreGhg16" class="hidden" fill="#555">
+ <circle cx="750" cy="480" r="7"/><circle cx="530" cy="455" r="7"/><circle cx="555" cy="210" r="7"/>
+ <circle cx="690" cy="180" r="7"/><circle cx="835" cy="335" r="7"/><circle cx="585" cy="185" r="7"/>
+</g>
+
+<path id="energyOut16" class="flow" d="M805 230 Q875 160 965 103" fill="none" stroke="#8d69a5" stroke-width="8" marker-end="url(#arr16purple)"/>
+<text x="910" y="180" text-anchor="middle" font-size="15" font-weight="700">THERMAL ENERGY OUT</text>
+
+<rect x="500" y="555" width="330" height="30" rx="6" fill="#eee" stroke="#777"/>
+<rect id="bar16" x="502" y="557" width="198" height="26" rx="4" fill="#bbb"/>
+<text x="665" y="612" text-anchor="middle" font-size="16" font-weight="700">RELATIVE ENERGY STORED IN EARTH SYSTEM</text>
+</svg>
+
+<div id="status16" class="status" aria-live="polite">START — NATURAL GREENHOUSE EQUILIBRIUM WITHOUT ICE IN THIS SIMPLIFIED MODEL</div>
+<div class="controls">
+ <button id="iceBtn16">PART 1: ADD SNOW AND ICE</button>
+ <button id="ghgBtn16" disabled>PART 2: ADD MORE GREENHOUSE GASES</button>
+ <button id="equilibriumBtn16" disabled>CONTINUE TO NEW EQUILIBRIUM</button>
+ <button id="pondRevealBtn16" disabled>RETURN TO FARMER JOHN’S POND</button>
+ <button id="reset16">RESET</button>
+</div>
+</div>
+
+<div class="prompt">
+<b>New system component:</b> Snow and ice have high albedo. They reflect a larger fraction of incoming sunlight back to space, so less solar energy is absorbed by the Earth system.
+</div>
+<div id="icePrompt16" class="prompt hidden">
+<b>Part 1 — Adding ice:</b> Reflection increases, absorption decreases, and stored energy falls until the system reaches a cooler equilibrium.
+</div>
+<div id="feedbackPrompt16" class="prompt hidden">
+<b>Part 2 — Ice–albedo positive feedback:</b> Additional greenhouse gases initiate warming. Warming melts snow and ice → the darker surface reflects less sunlight → more solar energy is absorbed → additional warming causes still more melting.
+</div>
+<div id="newEqPrompt16" class="prompt hidden">
+<b>Amplified response:</b> The system eventually balances again as the warmer Earth emits more thermal energy to space. Greenhouse gases initiated the warming; the ice–albedo feedback increased the total response.
+</div>
+
+<div id="pondCheck16" class="check hidden">
+<h2>Understanding Check — Return to Farmer John’s Pond</h2>
+<p class="sub">Watch for the same reinforcing-feedback pattern in a different system.</p>
+<svg viewBox="0 0 1000 420" role="img" aria-labelledby="pondTitle16 pondDesc16">
+ <title id="pondTitle16">Farmer John’s lined pond positive feedback</title>
+ <desc id="pondDesc16">A heat wave increases evaporation. Falling water exposes more dark pond liner, which absorbs more sunlight and produces additional heating and evaporation.</desc>
+ <defs>
+  <marker id="pondArrow16" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L5,2.5 L0,5 Z" fill="#777"/></marker>
+  <clipPath id="pondClip16"><path d="M250 130 Q500 95 750 130 L705 350 Q500 390 295 350Z"/></clipPath>
+ </defs>
+ <circle id="pondSun16" cx="110" cy="95" r="48" fill="#f4d34f" stroke="#555" stroke-width="2"/>
+ <text x="110" y="101" text-anchor="middle" font-size="18" font-weight="700">SUN</text>
+ <path id="pondSolar16" class="flow" d="M165 120 Q230 165 315 205" fill="none" stroke="#d2a600" stroke-width="6" marker-end="url(#pondArrow16)"/>
+ <text x="205" y="180" text-anchor="middle" font-size="14" font-weight="700">SOLAR ENERGY</text>
+ <path d="M250 130 Q500 95 750 130 L705 350 Q500 390 295 350Z" fill="#4d4d4d" stroke="#555" stroke-width="3"/>
+ <g clip-path="url(#pondClip16)">
+  <rect id="pondWater16" x="220" y="155" width="560" height="220" fill="#9ec9e6"/>
+  <line id="pondLevel16" x1="260" y1="155" x2="740" y2="155" stroke="#2878b5" stroke-width="4"/>
+ </g>
+ <text id="linerLabel16" x="500" y="330" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">DARK POND LINER</text>
+ <path id="evap1_16" class="flow" d="M410 145 Q395 95 420 55" fill="none" stroke="#7aa6be" stroke-width="5" marker-end="url(#pondArrow16)"/>
+ <path id="evap2_16" class="flow" d="M500 140 Q485 85 510 45" fill="none" stroke="#7aa6be" stroke-width="5" marker-end="url(#pondArrow16)"/>
+ <path id="evap3_16" class="flow" d="M590 145 Q575 95 600 55" fill="none" stroke="#7aa6be" stroke-width="5" marker-end="url(#pondArrow16)"/>
+ <text x="510" y="25" text-anchor="middle" font-size="15" font-weight="700">EVAPORATION</text>
+ <text id="pondStateLabel16" x="500" y="405" text-anchor="middle" font-size="17" font-weight="700">STABLE POND — MOST DARK LINER IS COVERED</text>
+</svg>
+<div class="controls">
+ <button id="pondRunBtn16">START HEAT WAVE</button>
+ <button id="pondResetBtn16">RESET POND</button>
+</div>
+<div id="pondStatus16" class="status" aria-live="polite">WATER LEVEL STABLE — SOLAR ENERGY IN AND WATER LOSS ARE BALANCED</div>
+<div id="pondMapping16" class="mapping hidden">
+ <b>Make the connection:</b> Initial heat wave ↔ greenhouse-gas warming; exposed dark liner ↔ exposed darker land or ocean; less reflection ↔ lower albedo; additional evaporation ↔ additional warming and ice loss.
+ <br><b>Question:</b> In both systems, what change caused by the initial warming then increased the amount of solar energy absorbed?
+</div>
+</div>
+</div>
+
+<script>
+const iceBtn=document.getElementById('iceBtn16');
+const ghgBtn=document.getElementById('ghgBtn16');
+const equilibriumBtn=document.getElementById('equilibriumBtn16');
+const pondRevealBtn=document.getElementById('pondRevealBtn16');
+const resetBtn=document.getElementById('reset16');
+const iceGroup=document.getElementById('ice16');
+const iceNorth=document.getElementById('iceNorth16');
+const iceSouth=document.getElementById('iceSouth16');
+const moreGhg=document.getElementById('moreGhg16');
+const atmosphereLabel=document.getElementById('atmosphereLabel16');
+const reflected=document.getElementById('reflected16');
+const absorbed=document.getElementById('absorbed16');
+const reflectedLabel=document.getElementById('reflectedLabel16');
+const absorbedLabel=document.getElementById('absorbedLabel16');
+const energyOut=document.getElementById('energyOut16');
+const bar=document.getElementById('bar16');
+const status=document.getElementById('status16');
+const icePrompt=document.getElementById('icePrompt16');
+const feedbackPrompt=document.getElementById('feedbackPrompt16');
+const newEqPrompt=document.getElementById('newEqPrompt16');
+const pondCheck=document.getElementById('pondCheck16');
+let stored=60;
+let generation=0;
+let timers=[];
+
+function clearTimers(){generation++;timers.forEach(clearTimeout);timers=[];}
+function later(fn,delay){const id=setTimeout(fn,delay);timers.push(id);}
+function setStored(v){stored=v;bar.setAttribute('width',Math.max(20,326*v/100));}
+function animateStored(target,duration,done){
+ const start=stored,startTime=performance.now(),run=generation;
+ function frame(now){
+  if(run!==generation)return;
+  const p=Math.min(1,(now-startTime)/duration);
+  const eased=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+  setStored(start+(target-start)*eased);
+  if(p<1)requestAnimationFrame(frame);else if(done)done();
+ }
+ requestAnimationFrame(frame);
+}
+function setIceScale(scale){
+ iceNorth.setAttribute('transform',`translate(${665*(1-scale)} ${335*(1-scale)}) scale(${scale})`);
+ iceSouth.setAttribute('transform',`translate(${665*(1-scale)} ${335*(1-scale)}) scale(${scale})`);
+}
+function addIce(){
+ clearTimers();
+ iceBtn.disabled=true;
+ iceGroup.classList.remove('hidden');
+ setIceScale(1);
+ reflected.setAttribute('stroke-width','10');
+ absorbed.setAttribute('stroke-width','5');
+ reflectedLabel.textContent='MORE REFLECTED';
+ absorbedLabel.textContent='LESS ABSORBED';
+ icePrompt.classList.remove('hidden');
+ status.textContent='ADDING ICE — MORE SUNLIGHT IS REFLECTED AND STORED ENERGY DECREASES';
+ energyOut.setAttribute('stroke-width','8');
+ animateStored(44,1600,()=>{
+  energyOut.setAttribute('stroke-width','5');
+  status.textContent='COOLER EQUILIBRIUM WITH ICE — BALANCED, LOWER STORED ENERGY';
+  ghgBtn.disabled=false;
+ });
+}
+function addGreenhouseGases(){
+ clearTimers();
+ ghgBtn.disabled=true;
+ moreGhg.classList.remove('hidden');
+ atmosphereLabel.textContent='ATMOSPHERE + ADDED GREENHOUSE GASES';
+ feedbackPrompt.classList.remove('hidden');
+ status.textContent='MORE GREENHOUSE GASES — INITIAL WARMING BEGINS';
+ energyOut.setAttribute('stroke-width','0');
+ animateStored(55,1100);
+ later(()=>{
+  setIceScale(.76);
+  reflected.setAttribute('stroke-width','8');
+  absorbed.setAttribute('stroke-width','7');
+  status.textContent='ICE–ALBEDO FEEDBACK — MELTING ICE REDUCES REFLECTION';
+  animateStored(65,1100);
+ },1200);
+ later(()=>{
+  setIceScale(.5);
+  reflected.setAttribute('stroke-width','5');
+  absorbed.setAttribute('stroke-width','10');
+  reflectedLabel.textContent='LESS REFLECTED';
+  absorbedLabel.textContent='MORE ABSORBED';
+  status.textContent='POSITIVE FEEDBACK AMPLIFIES THE ORIGINAL WARMING';
+  animateStored(76,1100,()=>{equilibriumBtn.disabled=false;});
+ },2400);
+}
+function reachEquilibrium(){
+ clearTimers();
+ equilibriumBtn.disabled=true;
+ status.textContent='WARMING CONTINUES — THERMAL ENERGY OUT INCREASES';
+ energyOut.setAttribute('stroke-width','10');
+ animateStored(84,1300,()=>{
+  newEqPrompt.classList.remove('hidden');
+  status.textContent='NEW WARMER EQUILIBRIUM — GREENHOUSE WARMING AMPLIFIED BY ICE LOSS';
+  pondRevealBtn.disabled=false;
+ });
+}
+function revealPond(){
+ pondCheck.classList.remove('hidden');
+ pondRevealBtn.disabled=true;
+ pondCheck.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function reset(){
+ clearTimers();
+ setStored(60);
+ iceGroup.classList.add('hidden');
+ moreGhg.classList.add('hidden');
+ setIceScale(1);
+ atmosphereLabel.textContent='NATURAL GREENHOUSE ATMOSPHERE';
+ reflected.setAttribute('stroke-width','5');
+ absorbed.setAttribute('stroke-width','8');
+ reflectedLabel.textContent='SOME REFLECTED';
+ absorbedLabel.textContent='MORE ABSORBED';
+ energyOut.setAttribute('stroke-width','8');
+ icePrompt.classList.add('hidden');
+ feedbackPrompt.classList.add('hidden');
+ newEqPrompt.classList.add('hidden');
+ pondCheck.classList.add('hidden');
+ status.textContent='START — NATURAL GREENHOUSE EQUILIBRIUM WITHOUT ICE IN THIS SIMPLIFIED MODEL';
+ iceBtn.disabled=false;
+ ghgBtn.disabled=true;
+ equilibriumBtn.disabled=true;
+ pondRevealBtn.disabled=true;
+}
+iceBtn.addEventListener('click',addIce);
+ghgBtn.addEventListener('click',addGreenhouseGases);
+equilibriumBtn.addEventListener('click',reachEquilibrium);
+pondRevealBtn.addEventListener('click',revealPond);
+resetBtn.addEventListener('click',reset);
+setStored(stored);
+
+const pondRunBtn=document.getElementById('pondRunBtn16');
+const pondResetBtn=document.getElementById('pondResetBtn16');
+const pondWater=document.getElementById('pondWater16');
+const pondLevel=document.getElementById('pondLevel16');
+const pondSun=document.getElementById('pondSun16');
+const pondSolar=document.getElementById('pondSolar16');
+const pondStateLabel=document.getElementById('pondStateLabel16');
+const pondStatus=document.getElementById('pondStatus16');
+const pondMapping=document.getElementById('pondMapping16');
+const evapPaths=['evap1_16','evap2_16','evap3_16'].map(id=>document.getElementById(id));
+let pondRun=0;
+function setPondLevel(y){
+ pondWater.setAttribute('y',String(y));
+ pondWater.setAttribute('height',String(375-y));
+ pondLevel.setAttribute('y1',String(y));
+ pondLevel.setAttribute('y2',String(y));
+}
+function resetPond(){
+ pondRun++;
+ setPondLevel(155);
+ pondSun.setAttribute('r','48');
+ pondSolar.setAttribute('stroke-width','6');
+ evapPaths.forEach(path=>path.setAttribute('stroke-width','5'));
+ pondStateLabel.textContent='STABLE POND — MOST DARK LINER IS COVERED';
+ pondStatus.textContent='WATER LEVEL STABLE — SOLAR ENERGY IN AND WATER LOSS ARE BALANCED';
+ pondMapping.classList.add('hidden');
+ pondRunBtn.disabled=false;
+}
+function runPond(){
+ const run=++pondRun;
+ pondRunBtn.disabled=true;
+ pondSun.setAttribute('r','56');
+ pondSolar.setAttribute('stroke-width','8');
+ evapPaths.forEach(path=>path.setAttribute('stroke-width','8'));
+ pondStatus.textContent='HEAT WAVE — EVAPORATION INCREASES AND THE WATER LEVEL FALLS';
+ let y=155;
+ function lower(){
+  if(run!==pondRun)return;
+  y+=1.1;
+  setPondLevel(Math.min(245,y));
+  if(y<205){requestAnimationFrame(lower);return;}
+  pondStateLabel.textContent='MORE DARK LINER EXPOSED — MORE SOLAR ENERGY ABSORBED';
+  pondStatus.textContent='POSITIVE FEEDBACK — EXPOSED LINER ADDS HEATING AND INCREASES EVAPORATION';
+  pondSolar.setAttribute('stroke-width','11');
+  evapPaths.forEach(path=>path.setAttribute('stroke-width','11'));
+  function amplify(){
+   if(run!==pondRun)return;
+   y+=1.35;
+   setPondLevel(Math.min(245,y));
+   if(y<245){requestAnimationFrame(amplify);return;}
+   pondStatus.textContent='THE INITIAL HEAT WAVE WAS AMPLIFIED BY THE LINER–EVAPORATION FEEDBACK';
+   pondMapping.classList.remove('hidden');
+  }
+  requestAnimationFrame(amplify);
+ }
+ requestAnimationFrame(lower);
+}
+pondRunBtn.addEventListener('click',runPond);
+pondResetBtn.addEventListener('click',resetPond);
+</script>
+</body>
+</html>
