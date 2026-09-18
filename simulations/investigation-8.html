@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farmer John Investigation 8 V7.13 - Pond Liner Feedback</title>
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#111827;background:#eef2f7}
+.page{max-width:1180px;margin:20px auto;padding:0 16px}
+.card{background:white;border:1px solid #d8dee8;border-radius:14px;box-shadow:0 2px 8px rgba(15,23,42,.07);overflow:hidden}
+header{padding:18px 22px 8px}
+h1{font-size:28px;margin:0 0 6px}
+.sub{color:#4b5563;font-size:15px;line-height:1.5}
+.grid{display:grid;grid-template-columns:minmax(640px,1.6fr) minmax(300px,.8fr);gap:16px;padding:16px 18px 20px}
+.sim{border:1px solid #cbd5e1;border-radius:12px;background:linear-gradient(#dff4ff 0 52%,#d8f0c8 52% 100%);overflow:hidden;min-height:650px}
+svg{width:100%;height:650px;display:block}
+.side{display:flex;flex-direction:column;gap:12px}
+.box{border:1px solid #cbd5e1;border-radius:10px;padding:13px;background:#f8fafc}
+.box h2{font-size:17px;margin:0 0 8px}
+.metric{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid #e2e8f0}
+.metric:last-child{border-bottom:0}
+.val{font-weight:700}
+button{width:100%;padding:12px;border:1px solid #64748b;border-radius:9px;background:white;font-size:15px;font-weight:700;cursor:pointer}
+button:hover{background:#f8fafc}
+button.primary{background:#111827;color:white;border-color:#111827}
+button.secondary{margin-top:8px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.status{min-height:104px;line-height:1.45}
+.tiny{font-size:13px;color:#4b5563;line-height:1.45}
+.sunray{stroke:#f59e0b;stroke-width:5;stroke-linecap:round;opacity:.82}
+.evapWrap{display:none}
+.evapWrap.active{display:block}
+.evapDrop{stroke:#60a5fa;stroke-width:5;stroke-linecap:round;animation:rise .9s linear infinite}
+.evapWrap:nth-child(2n) .evapDrop{animation-delay:-.28s}
+.evapWrap:nth-child(3n) .evapDrop{animation-delay:-.55s}
+@keyframes rise{0%{transform:translateY(22px)}100%{transform:translateY(-78px)}}
+.heatwave{animation:pulse 1.15s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.65}50%{opacity:1}}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.sim{min-height:590px}svg{height:590px}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="card">
+<header>
+<h1>Investigation 8 Prototype — Pond Liner Feedback V7.13</h1>
+<div class="sub">Farmer John has a lined irrigation pond. He planted trees to reduce sunlight and wind across the pond, which lowered evaporation enough that he could reduce the constant refill rate. The system worked well during mild summer conditions. Now he wants to know what happens during an unusually hot period.</div>
+</header>
+<div class="grid">
+<div class="sim">
+<svg id="scene" viewBox="0 0 780 650" role="img" aria-label="Cross-section of an irrigation pond with trees, sunlight, dark pond liner, water, refill, and evaporation">
+<g id="sunGroup">
+<circle cx="670" cy="85" r="35" fill="#fbbf24" stroke="#f59e0b" stroke-width="4"/>
+</g>
+
+<g id="trees">
+<rect x="615" y="220" width="18" height="175" fill="#92400e"/>
+<circle cx="624" cy="198" r="54" fill="#4d7c0f"/>
+<circle cx="592" cy="220" r="36" fill="#65a30d"/>
+<circle cx="654" cy="222" r="37" fill="#65a30d"/>
+<rect x="675" y="240" width="16" height="155" fill="#92400e"/>
+<circle cx="683" cy="220" r="45" fill="#3f6212"/>
+<circle cx="660" cy="238" r="29" fill="#65a30d"/>
+<circle cx="705" cy="238" r="28" fill="#65a30d"/>
+</g>
+
+<path d="M0 365 L180 365 L260 520 L520 520 L615 365 L780 365 L780 650 L0 650 Z" fill="#b08968"/>
+<path d="M180 365 L260 520 L520 520 L615 365" fill="none" stroke="#111827" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M194 374 L270 510 L510 510 L601 374" fill="none" stroke="#374151" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+<defs>
+<clipPath id="pondClip"><path d="M180 365 L260 520 L520 520 L615 365 Z"/></clipPath>
+</defs>
+
+<g clip-path="url(#pondClip)">
+<rect id="waterRect" x="165" y="410" width="470" height="145" fill="#38bdf8"/>
+<path id="waterWave" d="" fill="none" stroke="#0284c7" stroke-width="4"/>
+</g>
+
+<g id="linerExposure"></g>
+
+<path d="M72 365 L184 365" stroke="#64748b" stroke-width="15" stroke-linecap="round"/>
+<path id="inflow" d="M184 365 C198 365 204 374 214 388" stroke="#38bdf8" stroke-width="9" fill="none" stroke-linecap="round"/>
+<text x="72" y="342" font-size="15" font-weight="700">Constant refill</text>
+
+<g id="sunRays" stroke="#f59e0b" stroke-width="5" stroke-linecap="round">
+  <!-- Four short rays evenly distributed around the sun at normal conditions -->
+  <line class="baseRay" data-angle="0"   x1="714" y1="85"  x2="736" y2="85"/>
+  <line class="baseRay" data-angle="90"  x1="670" y1="129" x2="670" y2="151"/>
+  <line class="baseRay" data-angle="180" x1="626" y1="85"  x2="604" y2="85"/>
+  <line class="baseRay" data-angle="270" x1="670" y1="41"  x2="670" y2="19"/>
+
+  <!-- Additional rays appear progressively during the heat wave -->
+  <line class="extraRay" data-angle="45"  x1="701" y1="54"  x2="720" y2="35" opacity="0"/>
+  <line class="extraRay" data-angle="135" x1="639" y1="54"  x2="620" y2="35" opacity="0"/>
+  <line class="extraRay" data-angle="225" x1="639" y1="116" x2="620" y2="135" opacity="0"/>
+  <line class="extraRay" data-angle="315" x1="701" y1="116" x2="720" y2="135" opacity="0"/>
+
+  <line class="extraRay2" data-angle="22.5"  x1="711" y1="68"  x2="733" y2="59" opacity="0"/>
+  <line class="extraRay2" data-angle="112.5" x1="653" y1="44"  x2="644" y2="22" opacity="0"/>
+  <line class="extraRay2" data-angle="202.5" x1="629" y1="102" x2="607" y2="111" opacity="0"/>
+  <line class="extraRay2" data-angle="292.5" x1="687" y1="126" x2="696" y2="148" opacity="0"/>
+</g>
+
+<g id="evapGroup">
+  <text x="405" y="258" text-anchor="middle" font-size="16" font-weight="700">Evaporation</text>
+  <g id="evapDrops">
+    <g class="evapWrap evap1 active"><line class="evapDrop" x1="390" y1="346" x2="395" y2="330"/></g>
+    <g class="evapWrap evap2 active"><line class="evapDrop" x1="340" y1="348" x2="346" y2="328"/></g>
+    <g class="evapWrap evap3 active"><line class="evapDrop" x1="440" y1="350" x2="446" y2="330"/></g>
+    <g class="evapWrap evap4"><line class="evapDrop" x1="300" y1="352" x2="306" y2="332"/></g>
+    <g class="evapWrap evap5"><line class="evapDrop" x1="480" y1="351" x2="486" y2="331"/></g>
+    <g class="evapWrap evap6"><line class="evapDrop" x1="520" y1="349" x2="526" y2="329"/></g>
+    <g class="evapWrap evap7"><line class="evapDrop" x1="365" y1="353" x2="371" y2="333"/></g>
+    <g class="evapWrap evap8"><line class="evapDrop" x1="415" y1="353" x2="421" y2="333"/></g>
+    <g class="evapWrap evap9"><line class="evapDrop" x1="455" y1="354" x2="461" y2="334"/></g>
+  </g>
+</g>
+
+
+<g id="edgePlants">
+  <g transform="translate(168,382)">
+    <path d="M0 0 C-8 -18 -15 -24 -20 -28 M2 0 C6 -20 12 -28 18 -32 M1 0 C0 -18 0 -28 0 -38" stroke="#4d7c0f" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(148,390)">
+    <path d="M0 0 C-8 -16 -14 -22 -19 -27 M2 0 C6 -18 11 -26 16 -31 M1 0 C0 -17 0 -26 0 -35" stroke="#65a30d" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(602,390)">
+    <path d="M0 0 C-8 -18 -14 -25 -20 -30 M2 0 C8 -17 13 -25 19 -30 M1 0 C0 -18 0 -27 0 -36" stroke="#4d7c0f" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(632,380)">
+    <path d="M0 0 C-8 -18 -15 -24 -20 -30 M2 0 C7 -18 13 -26 18 -31 M1 0 C0 -18 0 -28 0 -38" stroke="#65a30d" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+</g>
+
+<text x="390" y="548" text-anchor="middle" font-size="15" font-weight="700">Dark waterproof pond liner</text>
+<text id="linerLabel" x="390" y="575" text-anchor="middle" font-size="14">Little liner exposed</text>
+
+<g id="heatLabel" opacity="0">
+<rect x="255" y="24" width="280" height="42" rx="10" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+<text x="395" y="51" text-anchor="middle" font-size="17" font-weight="700">UNUSUALLY HOT PERIOD</text>
+</g>
+</svg>
+</div>
+
+<div class="side">
+<div class="box">
+<h2>System Conditions</h2>
+<div class="metric"><span>Water stored</span><span class="val" id="levelVal">72%</span></div>
+<div class="metric"><span>Summer heat</span><span class="val" id="heatVal">5.0</span></div>
+<div class="metric"><span>Dark liner exposed</span><span class="val" id="linerVal">8%</span></div>
+<div class="metric"><span>Water IN</span><span class="val">4.0 units/s</span></div>
+<div class="metric"><span>Evaporation OUT</span><span class="val" id="evapVal">4.0 units/s</span></div>
+<div class="metric"><span>Net storage change</span><span class="val" id="netVal">0.0 units/s</span></div>
+</div>
+
+<div class="box">
+<h2>Farmer John's Test</h2>
+<button class="primary" id="testBtn">START HEAT WAVE</button>
+<button class="secondary" id="restoreBtn" disabled>ADD EXTRA WATER TO RESTORE POND</button>
+<button class="secondary" id="resetBtn">RESET</button>
+<p class="tiny">The test temporarily increases summer heat. The hot period ends automatically and returns to the original heat level. Watch whether the pond also returns to its original state.</p>
+</div>
+
+<div class="box status">
+<h2>What is the system doing?</h2>
+<div id="statusText">The pond begins in dynamic equilibrium. The trees reduce evaporation enough that the reduced constant refill keeps up with water loss.</div>
+</div>
+
+<div class="box">
+<h2>What to watch</h2>
+<div class="tiny">As the pond level falls, more of the dark liner on the sloping sides becomes exposed to sunlight. The liner does not suddenly “switch on.” Its effect grows gradually as more dark surface is exposed.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const startLevel = 0.72;
+const refill = 4.0;
+const normalHeat = 5.0;
+const maxHeat = 8.0;
+
+let level = startLevel;
+let heat = normalHeat;
+let heatwave = false;
+let heatTimer = 0;
+let shifted = false;
+let last = performance.now();
+
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+function exposedLiner(lvl){
+  const e = 0.08 + Math.pow(clamp((0.78-lvl)/0.50,0,1),1.35)*0.78;
+  return clamp(e,0.05,0.88);
+}
+
+function evaporationRate(){
+  const exposure = exposedLiner(level);
+  const baseAbsorb = 0.54 + 0.95*exposure;
+  const raw = heat * baseAbsorb;
+  const initExposure = exposedLiner(startLevel);
+  const initRaw = normalHeat * (0.54 + 0.95*initExposure);
+  return raw * (refill/initRaw);
+}
+
+function updatePhysics(dt){
+  if(heatwave){
+    heatTimer += dt;
+    if(heatTimer < 8) heat = normalHeat + (maxHeat-normalHeat)*(heatTimer/8);
+    else heat = maxHeat;
+    if(heatTimer >= 22){
+      heatwave = false;
+      heat = normalHeat;
+      $("heatLabel").setAttribute("opacity","0");
+      $("sunGroup").classList.remove("heatwave");
+    }
+  } else heat = normalHeat;
+
+  const evap = evaporationRate();
+  const net = refill - evap;
+  level += net * dt * 0.0078;
+  level = clamp(level,0.20,0.82);
+
+  if(!shifted && exposedLiner(level) > 0.36) shifted = true;
+}
+
+function waterY(){
+  const top=365, bottom=520;
+  return bottom - level*(bottom-top);
+}
+function sidePointLeft(y){
+  const t=(y-365)/(520-365);
+  return {x:180+(260-180)*t, y};
+}
+function sidePointRight(y){
+  const t=(y-365)/(520-365);
+  return {x:615+(520-615)*t, y};
+}
+
+function drawLinerExposure(){
+  const y = waterY();
+  const g = $("linerExposure");
+  g.innerHTML = "";
+  const leftWater=sidePointLeft(y);
+  const rightWater=sidePointRight(y);
+  const ns="http://www.w3.org/2000/svg";
+
+  const lp=document.createElementNS(ns,"line");
+  lp.setAttribute("x1",180); lp.setAttribute("y1",365);
+  lp.setAttribute("x2",leftWater.x); lp.setAttribute("y2",leftWater.y);
+  lp.setAttribute("stroke","#111827"); lp.setAttribute("stroke-width","18"); lp.setAttribute("stroke-linecap","round");
+  g.appendChild(lp);
+
+  const rp=document.createElementNS(ns,"line");
+  rp.setAttribute("x1",615); rp.setAttribute("y1",365);
+  rp.setAttribute("x2",rightWater.x); rp.setAttribute("y2",rightWater.y);
+  rp.setAttribute("stroke","#111827"); rp.setAttribute("stroke-width","18"); rp.setAttribute("stroke-linecap","round");
+  g.appendChild(rp);
+}
+
+function draw(){
+
+  // Refill stream follows the exact same left-bank geometry as the black liner.
+  // sidePointLeft() is already used to draw that liner, so this keeps the blue
+  // stream directly on top of it and ends it at the water/liner intersection.
+  const refillSurfaceY = waterY();
+  const refillMeet = sidePointLeft(refillSurfaceY);
+  $("inflow").setAttribute("d",
+    `M 180 365 L ${refillMeet.x.toFixed(1)} ${refillMeet.y.toFixed(1)}`);
+
+  const y = waterY();
+  $("waterRect").setAttribute("y",y);
+  $("waterRect").setAttribute("height",545-y);
+
+  const t=performance.now()/500;
+  $("waterWave").setAttribute("d",
+    `M190 ${y+Math.sin(t)*2} C300 ${y+Math.sin(t+1.4)*2}, 500 ${y+Math.sin(t+2.8)*2}, 605 ${y+Math.sin(t)*2}`
+  );
+
+  drawLinerExposure();
+
+  const exposure = exposedLiner(level);
+  const evap = evaporationRate();
+  const net = refill-evap;
+
+  $("levelVal").textContent = Math.round(level*100)+"%";
+  $("heatVal").textContent = heat.toFixed(1);
+  $("linerVal").textContent = Math.round(exposure*100)+"%";
+  $("evapVal").textContent = evap.toFixed(1)+" units/s";
+  $("netVal").textContent = (net>=0?"+":"")+net.toFixed(1)+" units/s";
+
+  const heatStrength = clamp((heat-normalHeat)/(maxHeat-normalHeat),0,1);
+
+  // Four rays at baseline. Additional rays appear around the circle as heat increases.
+  document.querySelectorAll(".extraRay").forEach((el,i) => {
+    const thresholds=[0.12,0.28,0.44,0.60];
+    el.setAttribute("opacity", heatStrength >= thresholds[i] ? "1" : "0");
+  });
+  document.querySelectorAll(".extraRay2").forEach((el,i) => {
+    const thresholds=[0.68,0.76,0.84,0.92];
+    el.setAttribute("opacity", heatStrength >= thresholds[i] ? "1" : "0");
+  });
+
+  // Lengthen all visible rays as the heat wave strengthens.
+  const cx=670, cy=85;
+  document.querySelectorAll(".baseRay,.extraRay,.extraRay2").forEach(el => {
+    const angle = parseFloat(el.dataset.angle) * Math.PI/180;
+    const inner = 44;
+    const outer = 66 + heatStrength*34;
+    const x1 = cx + Math.cos(angle)*inner;
+    const y1 = cy + Math.sin(angle)*inner;
+    const x2 = cx + Math.cos(angle)*outer;
+    const y2 = cy + Math.sin(angle)*outer;
+    el.setAttribute("x1", x1.toFixed(1));
+    el.setAttribute("y1", y1.toFixed(1));
+    el.setAttribute("x2", x2.toFixed(1));
+    el.setAttribute("y2", y2.toFixed(1));
+    el.setAttribute("stroke-width", (5 + heatStrength*1.5).toFixed(1));
+  });
+
+  // Reverse-rain evaporation: three streaks at baseline.
+  // During the heat wave, additional streaks appear gradually.
+  // When the heat wave ends, the visual evaporation returns to the original three streaks.
+  const evapVisualStrength = heatwave ? heatStrength : 0;
+  const visibleCount = 3 + Math.floor(evapVisualStrength * 6.99); // 3 to 9
+  for(let i=1;i<=9;i++){
+    const el = document.querySelector(".evap"+i);
+    el.classList.toggle("active", i <= visibleCount);
+  }
+
+  // Keep the animation speed constant so the changing number of streaks carries the visual message.
+  document.querySelectorAll(".evapDrop").forEach(el => {
+    el.style.animationDuration = "0.95s";
+  });
+
+
+  if(exposure < 0.18) $("linerLabel").textContent = "Little liner exposed";
+  else if(exposure < 0.38) $("linerLabel").textContent = "More dark liner exposed";
+  else $("linerLabel").textContent = "Large area of dark liner exposed";
+
+  let msg="";
+  if(heatwave && exposure < 0.22){
+    msg="The unusually hot period is increasing evaporation. The reduced constant refill can no longer fully replace the water being lost, so the pond level begins to fall.";
+  } else if(heatwave && exposure < 0.40){
+    msg="As the pond level falls, more dark liner is exposed to sunlight. That increases local heating and pushes evaporation still higher.";
+  } else if(heatwave && exposure >= 0.40){
+    msg="The pond has entered a reinforcing cycle: lower water exposes more dark liner, more dark surface absorbs sunlight, evaporation increases, and the water level falls farther.";
+  } else if(!heatwave && shifted && level > 0.42){
+    msg="The hot period has ended and summer heat has returned to its original value, but much more dark liner is now exposed. Evaporation remains higher than it was in the original high-water state, so the pond continues changing.";
+  } else if(!heatwave && shifted && level <= 0.42){
+    msg="The system has settled into a much lower-water state. The outside heat returned to normal, but the pond itself changed enough that it did not automatically return to its original condition.";
+  } else if(!heatwave && !shifted && Math.abs(level-startLevel)<0.02){
+    msg="The pond is in dynamic equilibrium. The trees reduce evaporation enough that the reduced constant refill keeps up with water loss.";
+  } else {
+    msg="The pond is adjusting toward equilibrium.";
+  }
+  $("statusText").textContent = msg;
+}
+
+$("testBtn").addEventListener("click",()=>{
+  if(heatwave) return;
+  heatwave=true;
+  heatTimer=0;
+  $("heatLabel").setAttribute("opacity","1");
+  $("sunGroup").classList.add("heatwave");
+});
+
+$("restoreBtn").addEventListener("click",()=>{
+  level=startLevel;
+  shifted=false;
+  heatwave=false;
+  heatTimer=0;
+  heat=normalHeat;
+  $("restoreBtn").disabled=true;
+  $("heatLabel").setAttribute("opacity","0");
+  $("sunGroup").classList.remove("heatwave");
+});
+
+$("resetBtn").addEventListener("click",()=>{
+  level=startLevel;
+  heat=normalHeat;
+  heatwave=false;
+  heatTimer=0;
+  shifted=false;
+  $("restoreBtn").disabled=true;
+  $("heatLabel").setAttribute("opacity","0");
+  $("sunGroup").classList.remove("heatwave");
+});
+
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  updatePhysics(dt);
+  if(shifted) $("restoreBtn").disabled=false;
+  draw();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
