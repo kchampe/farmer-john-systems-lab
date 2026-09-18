@@ -12,6 +12,7 @@
 .sim{height:570px;overflow:hidden;background:linear-gradient(#fff,#f8fafc)}svg{width:100%;height:100%;display:block}
 .row{display:flex;gap:8px;justify-content:space-between}button{border:1px solid #94a3b8;background:#fff;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer}
 button:hover{background:#f1f5f9}button:disabled{opacity:.55;cursor:not-allowed}.test{width:100%;margin-top:15px;padding:12px}
+.start{width:100%;margin-bottom:12px;padding:12px;background:#e8f5ff;border:2px solid #2677a8}
 .readout{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}.metric{display:flex;justify-content:space-between;gap:10px;padding:7px 0}
 .metric span:first-child{color:#475569}.status{margin-top:13px;padding:12px;background:var(--panel);border-radius:9px;min-height:72px;line-height:1.4}
 .instructions{font-size:14px;line-height:1.45;color:#475569;margin-top:14px}.prediction{padding:12px;border:1px solid var(--line);border-radius:9px;margin-top:14px;line-height:1.4}
@@ -33,13 +34,13 @@ button:hover{background:#f1f5f9}button:disabled{opacity:.55;cursor:not-allowed}.
 <svg viewBox="0 0 700 570" aria-label="Water tank with one inlet controlled by a float">
   <!-- single inlet -->
   <path d="M265 44 H365 V92 H410 V130" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect id="inStream" x="399" y="130" width="22" height="92" rx="10" fill="#60a5fa" opacity=".88"/>
+  <rect id="inStream" x="399" y="130" width="22" height="375" rx="10" fill="#60a5fa" opacity="0"/>
   <text x="275" y="25" font-size="18" font-weight="700">Water IN</text>
 
   <!-- tank -->
   <path d="M175 205 L210 505 Q350 535 490 505 L525 205" fill="#e2e8f0" stroke="#475569" stroke-width="7"/>
   <clipPath id="clip"><path d="M182 211 L216 499 Q350 526 484 499 L518 211 Z"/></clipPath>
-  <rect id="water" x="180" y="350" width="340" height="180" fill="#93c5fd" clip-path="url(#clip)"/>
+  <rect id="water" x="180" y="505" width="340" height="24" fill="#93c5fd" clip-path="url(#clip)"/>
   <path id="wave" fill="none" stroke="#2563eb" stroke-width="4" clip-path="url(#clip)"/>
 
   <!-- visible float and valve linkage, drawn above the water -->
@@ -50,7 +51,7 @@ button:hover{background:#f1f5f9}button:disabled{opacity:.55;cursor:not-allowed}.
 
   <!-- outlet -->
   <path d="M482 452 H605" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round"/>
-  <path d="M605 452 Q645 455 680 485" fill="none" stroke="#60a5fa" stroke-width="18" stroke-linecap="round" opacity=".85"/>
+  <path id="outStream" d="M605 452 Q645 455 680 485" fill="none" stroke="#60a5fa" stroke-width="0" stroke-linecap="round" opacity="0"/>
   <text x="548" y="420" font-size="17" font-weight="700">Water OUT</text>
 
   <!-- overflow -->
@@ -58,14 +59,15 @@ button:hover{background:#f1f5f9}button:disabled{opacity:.55;cursor:not-allowed}.
     <path d="M182 214 Q148 230 143 305" fill="none" stroke="#60a5fa" stroke-width="13" stroke-linecap="round"/>
     <path d="M518 214 Q552 230 557 305" fill="none" stroke="#60a5fa" stroke-width="13" stroke-linecap="round"/>
   </g>
-  <text id="levelTxt" x="350" y="405" text-anchor="middle" font-size="25" font-weight="700">50% stored</text>
+  <text id="levelTxt" x="350" y="405" text-anchor="middle" font-size="25" font-weight="700">0% stored</text>
 </svg>
 </div>
 
 <div class="card">
+<button class="start" id="startBtn">TURN ON WATER</button>
 <div class="row"><button id="pause">Pause</button><button id="reset">Reset</button></div>
 
-<div class="instructions"><b>Starting conditions:</b> Water IN = 5 units/s and Water OUT = 5 units/s. The tank begins in dynamic equilibrium.</div>
+<div class="instructions"><b>Starting conditions:</b> The tank begins empty. Turn on the water and watch it establish equilibrium before testing the float.</div>
 
 <div class="prediction"><b>Before testing John's repair:</b><br>
 If a little extra water is added, the float should rise. If John installed the system correctly, what should happen to <b>Water IN</b> as the float rises?<br><br>
@@ -74,13 +76,13 @@ Now test the system and watch Water IN carefully.</div>
 <button class="test" id="testBtn">ADD A SMALL AMOUNT OF WATER</button>
 
 <div class="readout">
-<div class="metric"><span>Water stored</span><strong id="stored">50%</strong></div>
-<div class="metric"><span>Water IN</span><strong id="inRead">5.0 units/s</strong></div>
-<div class="metric"><span>Water OUT</span><strong>5.0 units/s</strong></div>
+<div class="metric"><span>Water stored</span><strong id="stored">0%</strong></div>
+<div class="metric"><span>Water IN</span><strong id="inRead">0.0 units/s</strong></div>
+<div class="metric"><span>Water OUT</span><strong id="outRead">0.0 units/s</strong></div>
 <div class="metric"><span>Net change in storage</span><strong id="net">0.0 units/s</strong></div>
 </div>
 
-<div class="status" id="status">Dynamic equilibrium — Water IN equals Water OUT.</div>
+<div class="status" id="status">The tank is empty. Turn on the water to establish the initial equilibrium.</div>
 <div class="instructions">The button adds water only once. After the addition ends, continue watching the float, Water IN, and water level.</div>
 </div>
 </div>
@@ -89,17 +91,24 @@ Now test the system and watch Water IN carefully.</div>
 <script>
 (()=>{
 const start=.50,out=5,threshold=.525,maxIn=8.2,slope=8.0,speed=.0080;
-let level=start,paused=false,tested=false,last=performance.now();
+let level=0,paused=false,tested=false,systemOn=false,startup=true,last=performance.now();
 const $=id=>document.getElementById(id);
 
 function inflow(){
+  if(!systemOn)return 0;
+  if(startup)return 5;
   if(level<=threshold)return 5;
   return Math.min(maxIn,5+(level-threshold)*slope);
 }
+function outflow(){
+  if(!systemOn||level<=.18)return 0;
+  if(startup)return out*Math.max(0,Math.min(1,(level-.18)/(start-.18)));
+  return out;
+}
 function state(){
-  const input=inflow();let net=input-out,ov=0;
+  const input=inflow(),actualOut=outflow();let net=input-actualOut,ov=0;
   if(level>=.999&&net>0){ov=net;net=0}
-  return{input,net,ov};
+  return{input,actualOut,net,ov};
 }
 function draw(s,now){
  const top=211,bottom=505,y=bottom-level*(bottom-top);
@@ -110,16 +119,22 @@ function draw(s,now){
  const fy=Math.max(244,Math.min(450,y+15));
  $("float").setAttribute("cy",fy);$("arm").setAttribute("y2",fy);$("floatTxt").setAttribute("y",fy+5);
 
- const w=22+(s.input-5)*5;
+ const w=Math.max(0,22+(s.input-5)*5);
  $("inStream").setAttribute("width",w);$("inStream").setAttribute("x",410-w/2);
+ $("inStream").setAttribute("height",Math.max(0,y-130));$("inStream").setAttribute("opacity",s.input>0?".88":"0");
+ $("outStream").setAttribute("stroke-width",s.actualOut>0?5+s.actualOut*2.6:0);$("outStream").setAttribute("opacity",s.actualOut>0?".85":"0");
 
  $("stored").textContent=Math.round(level*100)+"%";$("levelTxt").textContent=Math.round(level*100)+"% stored";
  $("inRead").textContent=s.input.toFixed(1)+" units/s";
+ $("outRead").textContent=s.actualOut.toFixed(1)+" units/s";
  $("net").textContent=(s.net>=0?"+":"")+s.net.toFixed(1)+" units/s";
  $("overflow").setAttribute("opacity",s.ov>.01?"1":"0");
 
  let msg;
- if(!tested)msg="Dynamic equilibrium — Water IN equals Water OUT.";
+ if(!systemOn)msg="The tank is empty. Turn on the water to establish the initial equilibrium.";
+ else if(startup&&level<.18)msg="Water is entering and accumulating. The level has not yet reached the main outlet.";
+ else if(startup)msg="Water is entering and leaving while storage rises. Watch the two flow rates approach one another.";
+ else if(!tested)msg="Dynamic equilibrium — Water IN equals Water OUT. The float test is now available.";
  else if(s.ov>.01)msg="The tank is overflowing. Water IN increased as the float rose.";
  else if(s.input<5.25)msg="The one-time addition is finished. Watch what happens to Water IN as the float rises.";
  else if(s.input<6.2)msg="Water IN is increasing as the float rises. The tank continues to gain water.";
@@ -128,18 +143,22 @@ function draw(s,now){
 }
 function frame(now){
  const dt=Math.min(.05,(now-last)/1000);last=now;let s=state();
- if(!paused){level+=s.net*dt*speed;level=Math.max(.18,Math.min(1,level))}
+ if(!paused){level+=s.net*dt*(startup?.02:speed);level=Math.max(0,Math.min(1,level));
+   if(startup&&systemOn&&level>=.49){level=start;startup=false;$("startBtn").textContent="WATER ON — EQUILIBRIUM REACHED";$("testBtn").disabled=false}
+ }
  draw(state(),now);requestAnimationFrame(frame);
 }
 $("testBtn").onclick=()=>{
  if(tested)return;level=Math.min(1,level+.045);tested=true;
  $("testBtn").disabled=true;$("testBtn").textContent="SMALL AMOUNT ADDED";
 };
+$("startBtn").onclick=()=>{systemOn=true;$("startBtn").disabled=true;$("startBtn").textContent="WATER RUNNING";last=performance.now()};
 $("pause").onclick=()=>{paused=!paused;$("pause").textContent=paused?"Resume":"Pause"};
 $("reset").onclick=()=>{
- level=start;paused=false;tested=false;last=performance.now();
- $("pause").textContent="Pause";$("testBtn").disabled=false;$("testBtn").textContent="ADD A SMALL AMOUNT OF WATER";
+ level=0;paused=false;tested=false;systemOn=false;startup=true;last=performance.now();
+ $("pause").textContent="Pause";$("startBtn").disabled=false;$("startBtn").textContent="TURN ON WATER";$("testBtn").disabled=true;$("testBtn").textContent="ADD A SMALL AMOUNT OF WATER";
 };
+$("testBtn").disabled=true;
 draw(state(),performance.now());requestAnimationFrame(frame);
 })();
 </script></body></html>
