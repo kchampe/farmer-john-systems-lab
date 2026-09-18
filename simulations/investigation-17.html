@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Investigation 17 V17.1 — Crossing a Tipping Point</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#fff;color:#111}
+.wrap{max-width:1050px;margin:0 auto;padding:10px}
+h1{text-align:center;margin:4px 0;font-size:24px}
+.sub{text-align:center;margin:4px auto 10px;font-size:15px;max-width:920px;line-height:1.35}
+.stage{border:1.5px solid #999;padding:8px}
+svg{width:90%;height:auto;display:block;margin:0 auto}
+.controls{text-align:center;margin:10px 0}
+button{font-size:14px;font-weight:700;padding:8px 12px;margin:3px;border:2px solid #555;border-radius:7px;background:#fff;cursor:pointer}
+button:disabled{opacity:.35;cursor:default}
+.status{padding:7px 8px 5px;text-align:center;font-size:16px;font-weight:700;margin:8px auto;max-width:920px}
+.prompt{border:2px solid #777;border-radius:7px;padding:10px;margin:8px auto 0;max-width:920px;font-size:15px;line-height:1.4}
+.flow{stroke-dasharray:17 13;animation:flow 1.05s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-60}}
+.hidden{display:none}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Investigation 17 — Crossing a Tipping Point</h1>
+<p class="sub">A positive feedback can amplify change without producing a tipping point. In this simplified model, test what happens when warming remains below—or crosses—an ice-loss threshold.</p>
+
+<div class="stage">
+<svg viewBox="0 0 1120 650" role="img" aria-labelledby="tipTitle17 tipDesc17">
+<title id="tipTitle17">Simplified Earth system approaching and crossing an ice-loss tipping point</title>
+<desc id="tipDesc17">Students apply a small forcing, then an additional forcing. After a modeled threshold is crossed, rapid ice loss lowers albedo, increases absorbed sunlight, and shifts the system toward a much warmer state.</desc>
+<defs>
+ <marker id="arr17gray" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L5,2.5 L0,5 Z" fill="#777"/></marker>
+ <marker id="arr17gold" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L5,2.5 L0,5 Z" fill="#d2a600"/></marker>
+ <marker id="arr17purple" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L5,2.5 L0,5 Z" fill="#8d69a5"/></marker>
+</defs>
+
+<ellipse cx="665" cy="302" rx="310" ry="260" fill="none" stroke="#777" stroke-width="3" stroke-dasharray="12 10"/>
+<text x="665" y="36" text-anchor="middle" font-size="19" font-weight="700">EARTH-SYSTEM BOUNDARY</text>
+<text x="1000" y="65" font-size="18" font-weight="700">SPACE</text>
+
+<circle cx="105" cy="300" r="62" fill="#f4d34f" stroke="#555" stroke-width="2"/>
+<text x="105" y="307" text-anchor="middle" font-size="21" font-weight="700">SUN</text>
+<path class="flow" d="M175 300 H510" fill="none" stroke="#d2a600" stroke-width="8" marker-end="url(#arr17gold)"/>
+<text x="335" y="270" text-anchor="middle" font-size="17" font-weight="700">INCOMING SOLAR ENERGY</text>
+
+<path id="reflected17" class="flow" d="M520 255 Q430 195 340 135" fill="none" stroke="#aaa" stroke-width="10" marker-end="url(#arr17gray)"/>
+<text id="reflectedLabel17" x="365" y="165" font-size="14" font-weight="700">MORE REFLECTED</text>
+<path id="absorbed17" class="flow" d="M520 315 Q575 325 610 340" fill="none" stroke="#d2a600" stroke-width="5" marker-end="url(#arr17gold)"/>
+<text id="absorbedLabel17" x="455" y="360" text-anchor="middle" font-size="14" font-weight="700">LESS ABSORBED</text>
+
+<circle cx="665" cy="335" r="132" fill="#7ea9bd" stroke="#555" stroke-width="3"/>
+<g id="ice17">
+ <path id="iceNorth17" d="M550 280 Q605 190 665 198 Q725 190 780 280 Q720 252 665 260 Q610 252 550 280Z" fill="#fff" stroke="#777" stroke-width="2"/>
+ <path id="iceSouth17" d="M565 408 Q620 480 665 472 Q710 480 765 408 Q710 434 665 425 Q620 434 565 408Z" fill="#fff" stroke="#777" stroke-width="2"/>
+</g>
+<text x="665" y="342" text-anchor="middle" font-size="22" font-weight="700">EARTH</text>
+
+<circle cx="665" cy="335" r="174" fill="none" stroke="#9aa5ad" stroke-width="17" opacity=".35"/>
+<text id="atmosphereLabel17" x="665" y="143" text-anchor="middle" font-size="16" font-weight="700">GREENHOUSE ATMOSPHERE</text>
+<g id="baseGhg17" fill="#888">
+ <circle cx="770" cy="210" r="7"/><circle cx="825" cy="270" r="7"/><circle cx="815" cy="395" r="7"/>
+ <circle cx="600" cy="495" r="7"/><circle cx="505" cy="405" r="7"/><circle cx="505" cy="275" r="7"/>
+</g>
+<g id="smallForcing17" class="hidden" fill="#666">
+ <circle cx="750" cy="480" r="7"/><circle cx="555" cy="210" r="7"/><circle cx="835" cy="335" r="7"/>
+</g>
+<g id="largeForcing17" class="hidden" fill="#444">
+ <circle cx="530" cy="455" r="7"/><circle cx="690" cy="180" r="7"/><circle cx="585" cy="185" r="7"/>
+ <circle cx="790" cy="445" r="7"/><circle cx="485" cy="335" r="7"/>
+</g>
+
+<path id="energyOut17" class="flow" d="M805 230 Q875 160 965 103" fill="none" stroke="#8d69a5" stroke-width="7" marker-end="url(#arr17purple)"/>
+<text x="910" y="180" text-anchor="middle" font-size="15" font-weight="700">THERMAL ENERGY OUT</text>
+
+<rect x="470" y="555" width="390" height="30" rx="6" fill="#eee" stroke="#777"/>
+<rect id="bar17" x="472" y="557" width="172" height="26" rx="4" fill="#bbb"/>
+<line x1="726" y1="545" x2="726" y2="591" stroke="#555" stroke-width="3"/>
+<polygon points="718,543 734,543 726,531" fill="#555"/>
+<text x="726" y="615" text-anchor="middle" font-size="14" font-weight="700">MODELED ICE-LOSS THRESHOLD</text>
+<text x="665" y="642" text-anchor="middle" font-size="16" font-weight="700">RELATIVE ENERGY STORED IN EARTH SYSTEM</text>
+</svg>
+
+<div id="status17" class="status" aria-live="polite">START — COLD EQUILIBRIUM WITH EXTENSIVE REFLECTIVE ICE</div>
+<div class="controls">
+ <button id="smallBtn17">APPLY SMALL FORCING</button>
+ <button id="largeBtn17" disabled>APPLY ADDITIONAL FORCING</button>
+ <button id="crossBtn17" disabled>CONTINUE PAST THRESHOLD</button>
+ <button id="removeBtn17" disabled>REMOVE RECENT FORCING</button>
+ <button id="reset17">RESET</button>
+</div>
+</div>
+
+<div class="prompt">
+<b>Start:</b> The system is in a cold dynamic equilibrium. Extensive snow and ice reflect a large fraction of incoming sunlight, helping maintain relatively low stored energy.
+</div>
+<div id="belowPrompt17" class="prompt hidden">
+<b>Below the threshold:</b> The smaller forcing warms the system and reduces some ice, but substantial reflective ice remains. The system changes without tipping into a different state.
+</div>
+<div id="thresholdPrompt17" class="prompt hidden">
+<b>At the threshold:</b> The system has reached the modeled ice-loss threshold. Predict what will happen if warming continues.
+</div>
+<div id="tippedPrompt17" class="prompt hidden">
+<b>After the tipping point:</b> Rapid ice loss lowers albedo. More solar energy is absorbed, producing additional warming and still more ice loss. The system shifts toward a much warmer equilibrium.
+</div>
+<div id="returnPrompt17" class="prompt hidden">
+<b>Does reversing the forcing reverse the response?</b> Removing the most recent greenhouse-gas increase cools the system somewhat, but the lost reflective ice does not immediately return. The system remains in a warmer, lower-albedo state.
+</div>
+<div class="prompt">
+<b>Model limitation:</b> This animation represents a general threshold response. Real ice sheets, sea ice, and snow cover respond at different rates and may have different thresholds.
+</div>
+</div>
+
+<script>
+const smallBtn=document.getElementById('smallBtn17');
+const largeBtn=document.getElementById('largeBtn17');
+const crossBtn=document.getElementById('crossBtn17');
+const removeBtn=document.getElementById('removeBtn17');
+const resetBtn=document.getElementById('reset17');
+const smallForcing=document.getElementById('smallForcing17');
+const largeForcing=document.getElementById('largeForcing17');
+const atmosphereLabel=document.getElementById('atmosphereLabel17');
+const iceNorth=document.getElementById('iceNorth17');
+const iceSouth=document.getElementById('iceSouth17');
+const reflected=document.getElementById('reflected17');
+const absorbed=document.getElementById('absorbed17');
+const reflectedLabel=document.getElementById('reflectedLabel17');
+const absorbedLabel=document.getElementById('absorbedLabel17');
+const energyOut=document.getElementById('energyOut17');
+const bar=document.getElementById('bar17');
+const status=document.getElementById('status17');
+const belowPrompt=document.getElementById('belowPrompt17');
+const thresholdPrompt=document.getElementById('thresholdPrompt17');
+const tippedPrompt=document.getElementById('tippedPrompt17');
+const returnPrompt=document.getElementById('returnPrompt17');
+let stored=44;
+let generation=0;
+let timers=[];
+
+function clearTimers(){generation++;timers.forEach(clearTimeout);timers=[];}
+function later(fn,delay){const id=setTimeout(fn,delay);timers.push(id);}
+function setStored(v){stored=v;bar.setAttribute('width',Math.max(20,386*v/100));}
+function animateStored(target,duration,done){
+ const start=stored,startTime=performance.now(),run=generation;
+ function frame(now){
+  if(run!==generation)return;
+  const p=Math.min(1,(now-startTime)/duration);
+  const eased=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+  setStored(start+(target-start)*eased);
+  if(p<1)requestAnimationFrame(frame);else if(done)done();
+ }
+ requestAnimationFrame(frame);
+}
+function setIceScale(scale){
+ iceNorth.setAttribute('transform',`translate(${665*(1-scale)} ${335*(1-scale)}) scale(${scale})`);
+ iceSouth.setAttribute('transform',`translate(${665*(1-scale)} ${335*(1-scale)}) scale(${scale})`);
+}
+function smallForcingStep(){
+ clearTimers();
+ smallBtn.disabled=true;
+ smallForcing.classList.remove('hidden');
+ atmosphereLabel.textContent='ATMOSPHERE + SMALL ADDITIONAL FORCING';
+ energyOut.setAttribute('stroke-width','0');
+ status.textContent='SMALL FORCING — STORED ENERGY INCREASES';
+ animateStored(57,1350,()=>{
+  setIceScale(.82);
+  reflected.setAttribute('stroke-width','8');
+  absorbed.setAttribute('stroke-width','7');
+  energyOut.setAttribute('stroke-width','8');
+  belowPrompt.classList.remove('hidden');
+  status.textContent='WARMER EQUILIBRIUM — CHANGED, BUT STILL BELOW THE THRESHOLD';
+  largeBtn.disabled=false;
+ });
+}
+function largeForcingStep(){
+ clearTimers();
+ largeBtn.disabled=true;
+ largeForcing.classList.remove('hidden');
+ atmosphereLabel.textContent='ATMOSPHERE + LARGER ADDITIONAL FORCING';
+ energyOut.setAttribute('stroke-width','0');
+ status.textContent='ADDITIONAL FORCING — THE SYSTEM APPROACHES THE THRESHOLD';
+ animateStored(66,1450,()=>{
+  setIceScale(.68);
+  reflected.setAttribute('stroke-width','7');
+  absorbed.setAttribute('stroke-width','8');
+  thresholdPrompt.classList.remove('hidden');
+  status.textContent='ICE-LOSS THRESHOLD REACHED — WHAT HAPPENS IF WARMING CONTINUES?';
+  crossBtn.disabled=false;
+ });
+}
+function crossThreshold(){
+ clearTimers();
+ crossBtn.disabled=true;
+ status.textContent='TIPPING POINT CROSSED — RAPID ICE LOSS LOWERS ALBEDO';
+ setIceScale(.48);
+ reflected.setAttribute('stroke-width','5');
+ absorbed.setAttribute('stroke-width','10');
+ reflectedLabel.textContent='LESS REFLECTED';
+ absorbedLabel.textContent='MORE ABSORBED';
+ animateStored(78,900);
+ later(()=>{
+  setIceScale(.22);
+  reflected.setAttribute('stroke-width','3');
+  absorbed.setAttribute('stroke-width','12');
+  animateStored(90,1200,()=>{
+   energyOut.setAttribute('stroke-width','11');
+   tippedPrompt.classList.remove('hidden');
+   status.textContent='NEW MUCH WARMER EQUILIBRIUM — LOW ICE, LOW ALBEDO, HIGHER STORED ENERGY';
+   removeBtn.disabled=false;
+  });
+ },950);
+}
+function removeRecentForcing(){
+ clearTimers();
+ removeBtn.disabled=true;
+ largeForcing.classList.add('hidden');
+ atmosphereLabel.textContent='RECENT FORCING REMOVED';
+ energyOut.setAttribute('stroke-width','8');
+ status.textContent='RECENT FORCING REMOVED — THE SYSTEM COOLS, BUT ICE DOES NOT IMMEDIATELY RETURN';
+ animateStored(79,1500,()=>{
+  returnPrompt.classList.remove('hidden');
+  status.textContent='WARM STATE PERSISTS — RETURNING THE FORCING DID NOT RESTORE THE ORIGINAL STATE';
+ });
+}
+function reset(){
+ clearTimers();
+ setStored(44);
+ setIceScale(1);
+ smallForcing.classList.add('hidden');
+ largeForcing.classList.add('hidden');
+ atmosphereLabel.textContent='GREENHOUSE ATMOSPHERE';
+ reflected.setAttribute('stroke-width','10');
+ absorbed.setAttribute('stroke-width','5');
+ reflectedLabel.textContent='MORE REFLECTED';
+ absorbedLabel.textContent='LESS ABSORBED';
+ energyOut.setAttribute('stroke-width','7');
+ belowPrompt.classList.add('hidden');
+ thresholdPrompt.classList.add('hidden');
+ tippedPrompt.classList.add('hidden');
+ returnPrompt.classList.add('hidden');
+ status.textContent='START — COLD EQUILIBRIUM WITH EXTENSIVE REFLECTIVE ICE';
+ smallBtn.disabled=false;
+ largeBtn.disabled=true;
+ crossBtn.disabled=true;
+ removeBtn.disabled=true;
+}
+smallBtn.addEventListener('click',smallForcingStep);
+largeBtn.addEventListener('click',largeForcingStep);
+crossBtn.addEventListener('click',crossThreshold);
+removeBtn.addEventListener('click',removeRecentForcing);
+resetBtn.addEventListener('click',reset);
+setStored(stored);
+</script>
+</body>
+</html>
