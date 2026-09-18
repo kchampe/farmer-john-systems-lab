@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farmer John Investigation 9 V8.3 — Fertilizer Residence Time</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f4f1e8;color:#202020}
+  .wrap{max-width:1280px;margin:0 auto;padding:18px}
+  h1{text-align:center;margin:4px 0 5px;font-size:28px}
+  .sub{text-align:center;margin-bottom:14px;font-size:15px}
+  .story,.controls,.formula{background:white;border:2px solid #333;border-radius:10px;padding:12px 15px;margin-bottom:14px}
+  .story{font-size:15px;line-height:1.35}
+  .tanks{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .panel{background:white;border:2px solid #333;border-radius:10px;padding:14px}
+  .panel h2{text-align:center;margin:0 0 8px;font-size:22px}
+  .tank-area{position:relative;height:365px}
+  svg{width:100%;height:100%;display:block}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:8px;font-size:15px}
+  .metric{border-top:1px solid #bbb;padding-top:5px}
+  .metric strong{display:block;font-size:13px}
+  .big{font-size:20px;font-weight:bold}
+  .controls{text-align:center}
+  button{font-size:16px;font-weight:bold;padding:10px 18px;margin:4px 5px;border:2px solid #222;border-radius:7px;background:#fff;cursor:pointer;min-height:44px}
+  button:hover{background:#eee}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .formula{text-align:center;font-size:18px}
+  .formula strong{font-size:20px}
+  .note{text-align:center;font-size:13px;margin-top:7px;color:#444}
+  .legend{text-align:center;font-size:13px;margin-top:3px}
+  .status{text-align:center;font-weight:bold;min-height:22px;margin-top:7px}
+  @media(max-width:800px){.tanks{grid-template-columns:1fr}.tank-area{height:330px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Farmer John’s Fertilizer Tanks</h1>
+  <div class="sub">Investigation 9 — Same Equilibrium, Different Residence Time</div>
+
+  <div class="story">
+    Farmer John wants to add a liquid fertilizer to his irrigation water. Both tanks below contain the
+    <strong>same amount of water</strong> and both are in <strong>dynamic equilibrium</strong>, but water moves
+    through them at different rates. Add the same fertilizer dose to both tanks and compare how long it remains in each system.
+  </div>
+
+  <div class="tanks">
+    <section class="panel">
+      <h2>Tank A — Slow Turnover</h2>
+      <div class="tank-area">
+        <svg viewBox="0 0 500 360" aria-label="Tank A slow-turnover fertilizer mixing simulation">
+          <defs>
+            <clipPath id="clipA"><rect x="105" y="75" width="285" height="235" rx="2"/></clipPath>
+          </defs>
+          <!-- faucet -->
+          <path d="M70 48 H145 V78" fill="none" stroke="#555" stroke-width="16" stroke-linecap="round"/>
+          <path d="M145 78 V192" stroke="#3f8fc5" stroke-width="8" stroke-linecap="round"/>
+          <path id="waveA" d="M108 192 Q125 188 142 192 T176 192 T210 192 T244 192 T278 192 T312 192 T346 192 T388 192"
+                fill="none" stroke="#2f76ad" stroke-width="3"/>
+          <g id="dropGroupA" opacity="0">
+            <line x1="250" y1="82" x2="250" y2="132" stroke="#6c4a8e" stroke-width="18" stroke-linecap="round"/>
+          </g>
+          <!-- tank -->
+          <path d="M95 65 V320 H400 V65" fill="none" stroke="#333" stroke-width="8" stroke-linejoin="round"/>
+          <g clip-path="url(#clipA)">
+            <rect x="105" y="192" width="285" height="118" fill="#69aee0"/>
+            <rect id="fertA" x="105" y="192" width="285" height="118" fill="#6c4a8e" opacity="0"/>
+            <g id="mixA" opacity="0">
+              <circle cx="150" cy="220" r="5" fill="#4c2d6d"/><circle cx="220" cy="255" r="4" fill="#4c2d6d"/>
+              <circle cx="300" cy="215" r="5" fill="#4c2d6d"/><circle cx="355" cy="275" r="4" fill="#4c2d6d"/>
+              <circle cx="265" cy="290" r="4" fill="#4c2d6d"/><circle cx="180" cy="285" r="4" fill="#4c2d6d"/>
+            </g>
+          </g>
+          <!-- outlet -->
+          <path d="M400 265 H460" fill="none" stroke="#555" stroke-width="15" stroke-linecap="round"/>
+          <path d="M460 265 H486" stroke="#3f8fc5" stroke-width="6" stroke-linecap="round"/>
+          <text x="110" y="345" font-size="16">100 units stored</text>
+          <text x="16" y="35" font-size="15">IN = 2 units/s</text>
+          <text x="355" y="345" font-size="15">OUT = 2 units/s</text>
+        </svg>
+      </div>
+      <div class="metrics">
+        <div class="metric"><strong>Dynamic equilibrium</strong><span class="big">YES</span></div>
+        <div class="metric"><strong>Water stored</strong><span class="big">100 units</span></div>
+        <div class="metric"><strong>Fertilizer concentration</strong><span id="concA" class="big">0.0%</span></div>
+        <div class="metric"><strong>Calculated residence time</strong><span class="big">50 s</span></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Tank B — Fast Turnover</h2>
+      <div class="tank-area">
+        <svg viewBox="0 0 500 360" aria-label="Tank B fast-turnover fertilizer mixing simulation">
+          <defs>
+            <clipPath id="clipB"><rect x="105" y="75" width="285" height="235" rx="2"/></clipPath>
+          </defs>
+          <path d="M70 48 H145 V78" fill="none" stroke="#555" stroke-width="16" stroke-linecap="round"/>
+          <path d="M145 78 V192" stroke="#3f8fc5" stroke-width="20" stroke-linecap="round"/>
+          <path id="waveB" d="M108 192 Q125 188 142 192 T176 192 T210 192 T244 192 T278 192 T312 192 T346 192 T388 192"
+                fill="none" stroke="#2f76ad" stroke-width="3"/>
+          <g id="dropGroupB" opacity="0">
+            <line x1="250" y1="82" x2="250" y2="132" stroke="#6c4a8e" stroke-width="18" stroke-linecap="round"/>
+          </g>
+          <path d="M95 65 V320 H400 V65" fill="none" stroke="#333" stroke-width="8" stroke-linejoin="round"/>
+          <g clip-path="url(#clipB)">
+            <rect x="105" y="192" width="285" height="118" fill="#69aee0"/>
+            <rect id="fertB" x="105" y="192" width="285" height="118" fill="#6c4a8e" opacity="0"/>
+            <g id="mixB" opacity="0">
+              <circle cx="150" cy="220" r="5" fill="#4c2d6d"/><circle cx="220" cy="255" r="4" fill="#4c2d6d"/>
+              <circle cx="300" cy="215" r="5" fill="#4c2d6d"/><circle cx="355" cy="275" r="4" fill="#4c2d6d"/>
+              <circle cx="265" cy="290" r="4" fill="#4c2d6d"/><circle cx="180" cy="285" r="4" fill="#4c2d6d"/>
+            </g>
+          </g>
+          <path d="M400 265 H460" fill="none" stroke="#555" stroke-width="15" stroke-linecap="round"/>
+          <path d="M460 265 H490" stroke="#3f8fc5" stroke-width="20" stroke-linecap="round"/>
+          <text x="110" y="345" font-size="16">100 units stored</text>
+          <text x="10" y="35" font-size="15">IN = 10 units/s</text>
+          <text x="345" y="345" font-size="15">OUT = 10 units/s</text>
+        </svg>
+      </div>
+      <div class="metrics">
+        <div class="metric"><strong>Dynamic equilibrium</strong><span class="big">YES</span></div>
+        <div class="metric"><strong>Water stored</strong><span class="big">100 units</span></div>
+        <div class="metric"><strong>Fertilizer concentration</strong><span id="concB" class="big">0.0%</span></div>
+        <div class="metric"><strong>Calculated residence time</strong><span class="big">10 s</span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="controls">
+    <button id="add">ADD SAME FERTILIZER DOSE TO BOTH TANKS</button>
+    <button id="pause" disabled>PAUSE</button>
+    <button id="reset">RESET</button>
+    <div id="status" class="status">Both tanks begin in dynamic equilibrium.</div>
+    <div>Elapsed time after fertilizer addition: <strong><span id="timer">0.0</span> s</strong></div>
+  </div>
+
+  <div class="formula">
+    <strong>Residence time = amount stored ÷ rate leaving</strong><br>
+    Tank A: 100 ÷ 2 = 50 s &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp; Tank B: 100 ÷ 10 = 10 s
+    <div class="note">Residence time is an average timescale. In a well-mixed tank, fertilizer concentration declines gradually rather than every molecule leaving at exactly the residence time.</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const add = document.getElementById('add');
+  const pause = document.getElementById('pause');
+  const reset = document.getElementById('reset');
+  const timer = document.getElementById('timer');
+  const concA = document.getElementById('concA');
+  const concB = document.getElementById('concB');
+  const fertA = document.getElementById('fertA');
+  const fertB = document.getElementById('fertB');
+  const mixA = document.getElementById('mixA');
+  const mixB = document.getElementById('mixB');
+  const status = document.getElementById('status');
+  const waveA = document.getElementById('waveA');
+  const waveB = document.getElementById('waveB');
+  const dropGroupA = document.getElementById('dropGroupA');
+  const dropGroupB = document.getElementById('dropGroupB');
+
+  let experimentRunning = false;
+  let paused = false;
+  let elapsed = 0;
+  let dropElapsed = 0;
+  let last = performance.now();
+  let fertilizerMixed = false;
+  let raf = null;
+
+  const initialConc = 100;
+  const tauA = 50;
+  const tauB = 10;
+  const dropDuration = 0.95; // seconds until impact with water surface
+
+  function animateSurface(t){
+    const phase = t / 260;
+    const pts = [];
+    const x0 = 108, x1 = 388, step = 12;
+    for(let x=x0; x<=x1; x+=step){
+      const y = 192 + Math.sin((x-x0)/17 + phase) * 3.1;
+      pts.push([x,y]);
+    }
+    let d = `M ${pts[0][0]} ${pts[0][1]}`;
+    for(let i=1;i<pts.length;i++) d += ` L ${pts[i][0]} ${pts[i][1]}`;
+    waveA.setAttribute('d', d);
+    waveB.setAttribute('d', d);
+  }
+
+  function setConcentrations(timeSinceMix){
+    const a = initialConc * Math.exp(-timeSinceMix/tauA);
+    const b = initialConc * Math.exp(-timeSinceMix/tauB);
+    concA.textContent = a.toFixed(1) + '%';
+    concB.textContent = b.toFixed(1) + '%';
+    fertA.setAttribute('opacity', Math.min(.72, .08 + .64*a/100).toFixed(3));
+    fertB.setAttribute('opacity', Math.min(.72, .08 + .64*b/100).toFixed(3));
+    mixA.setAttribute('opacity', Math.min(.9, a/100).toFixed(3));
+    mixB.setAttribute('opacity', Math.min(.9, b/100).toFixed(3));
+
+    if (timeSinceMix < 3) {
+      status.textContent = 'The fertilizer has mixed into both tanks.';
+    } else if (b < a * 0.65) {
+      status.textContent = 'Tank B is losing fertilizer concentration much faster, even though both tanks remain in equilibrium.';
+    }
+    if (timeSinceMix >= 60) {
+      status.textContent = 'Compare the two concentrations. Same storage and same equilibrium status do not mean the same residence time.';
+    }
+  }
+
+  function animateDrop(){
+    if (!experimentRunning || fertilizerMixed) {
+      dropGroupA.setAttribute('opacity','0');
+      dropGroupB.setAttribute('opacity','0');
+      return;
+    }
+
+    const frac = Math.max(0, Math.min(1, dropElapsed/dropDuration));
+    // Start high above the water and fall directly downward to the surface.
+    const yShift = frac * 82;
+    dropGroupA.setAttribute('opacity','1');
+    dropGroupB.setAttribute('opacity','1');
+    dropGroupA.setAttribute('transform', `translate(0 ${yShift})`);
+    dropGroupB.setAttribute('transform', `translate(0 ${yShift})`);
+
+    if (frac >= 1) {
+      fertilizerMixed = true;
+      elapsed = 0;
+      dropGroupA.setAttribute('opacity','0');
+      dropGroupB.setAttribute('opacity','0');
+      fertA.setAttribute('opacity','.72');
+      fertB.setAttribute('opacity','.72');
+      mixA.setAttribute('opacity','.9');
+      mixB.setAttribute('opacity','.9');
+      concA.textContent = '100.0%';
+      concB.textContent = '100.0%';
+      timer.textContent = '0.0';
+      status.textContent = 'The fertilizer hits the water and mixes into both tanks.';
+    }
+  }
+
+  function resetVisuals(){
+    experimentRunning = false;
+    paused = false;
+    elapsed = 0;
+    dropElapsed = 0;
+    fertilizerMixed = false;
+    add.disabled = false;
+    pause.disabled = true;
+    pause.textContent = 'PAUSE';
+    timer.textContent = '0.0';
+    concA.textContent = '0.0%';
+    concB.textContent = '0.0%';
+    fertA.setAttribute('opacity','0');
+    fertB.setAttribute('opacity','0');
+    mixA.setAttribute('opacity','0');
+    mixB.setAttribute('opacity','0');
+    dropGroupA.setAttribute('opacity','0');
+    dropGroupB.setAttribute('opacity','0');
+    dropGroupA.setAttribute('transform','translate(0 0)');
+    dropGroupB.setAttribute('transform','translate(0 0)');
+    status.textContent = 'Both tanks begin in dynamic equilibrium.';
+  }
+
+  function frame(t){
+    const dt = Math.min((t-last)/1000, .1);
+    last = t;
+
+    // Surface motion is continuous, even before fertilizer is added and while paused.
+    animateSurface(t);
+
+    if (experimentRunning && !paused) {
+      if (!fertilizerMixed) {
+        dropElapsed += dt;
+        animateDrop();
+      } else {
+        elapsed += dt;
+        timer.textContent = elapsed.toFixed(1);
+        setConcentrations(elapsed);
+      }
+    }
+
+    raf = requestAnimationFrame(frame);
+  }
+
+  add.addEventListener('click', () => {
+    experimentRunning = true;
+    paused = false;
+    elapsed = 0;
+    dropElapsed = 0;
+    fertilizerMixed = false;
+    add.disabled = true;
+    pause.disabled = false;
+    pause.textContent = 'PAUSE';
+    status.textContent = 'Fertilizer is being added to both tanks...';
+  });
+
+  pause.addEventListener('click', () => {
+    if (!experimentRunning) return;
+    paused = !paused;
+    pause.textContent = paused ? 'RESUME' : 'PAUSE';
+    status.textContent = paused ? 'Simulation paused for observation.' :
+      (fertilizerMixed ? 'Simulation running.' : 'Fertilizer is being added to both tanks...');
+  });
+
+  reset.addEventListener('click', resetVisuals);
+
+  resetVisuals();
+  raf = requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
