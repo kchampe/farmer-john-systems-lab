@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Farmer John Investigation 10 V10.2 — Two Reservoir System</title>
+<style>
+*{box-sizing:border-box} body{margin:0;background:#f4f1e8;font-family:Arial,Helvetica,sans-serif;color:#202020}
+.wrap{max-width:1250px;margin:auto;padding:18px} h1{text-align:center;margin:4px 0;font-size:28px}
+.sub{text-align:center;margin:0 0 14px}.story,.sim,.controls,.key{background:#fff;border:2px solid #333;border-radius:10px;padding:13px 16px;margin-bottom:14px}
+.story{line-height:1.4}.sim{padding:10px}.stage{height:570px} svg{width:100%;height:100%;display:block}
+.controls{text-align:center} button{padding:10px 16px;margin:4px;font-size:15px;font-weight:bold;background:white;border:2px solid #222;border-radius:7px;cursor:pointer;min-height:44px}
+button:disabled{opacity:.45}.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+.metric{text-align:center;border-top:1px solid #aaa;padding-top:6px}.metric strong{display:block;font-size:13px}.value{font-size:20px;font-weight:bold}
+.status{text-align:center;font-weight:bold;min-height:22px;margin:8px 0}.key{text-align:center;font-size:17px}
+@media(max-width:800px){.stage{height:500px}.metrics{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Farmer John’s Two-Reservoir System</h1>
+<div class="sub">Investigation 10 — Transfers Within a System</div>
+
+<div class="story">
+Farmer John now uses two connected water reservoirs. The <strong>upper holding tank</strong> and
+<strong>lower storage pond</strong> are both inside the boundary of his water system. A pump can move
+water from the lower reservoir to the upper reservoir. Watch what happens to each reservoir—and to the
+amount of water stored in the <em>whole system</em>.
+</div>
+
+<div class="sim">
+<div class="stage">
+<svg viewBox="0 0 1000 560" aria-label="Two connected reservoirs inside Farmer John's system boundary">
+  <defs>
+    <clipPath id="upperClip"><rect x="355" y="90" width="290" height="170"/></clipPath>
+    <clipPath id="lowerClip"><path d="M185 375 Q500 330 815 375 L760 510 H240 Z"/></clipPath>
+  </defs>
+
+  <!-- system boundary -->
+  <rect x="55" y="35" width="890" height="490" rx="22" fill="none" stroke="#555" stroke-width="4" stroke-dasharray="12 9"/>
+  <text x="75" y="65" font-size="18" font-weight="bold">FARMER JOHN'S WATER SYSTEM BOUNDARY</text>
+
+  <!-- Stage 2 external input: crosses the whole-system boundary -->
+  <path d="M5 115 H285 V145 H345" fill="none" stroke="#555" stroke-width="16" stroke-linejoin="round"/>
+  <path id="externalInputFlow" d="M5 115 H285 V145 H345" fill="none" stroke="#3f8fc5" stroke-width="7" stroke-linejoin="round" stroke-dasharray="18 14" opacity="0"/>
+  <polygon id="inputArrow" points="320,134 345,145 320,156" fill="#3f8fc5" opacity="0"/>
+  <text x="80" y="105" font-size="16" font-weight="bold">Water from outside system</text>
+
+  <!-- upper tank -->
+  <text x="500" y="88" text-anchor="middle" font-size="22" font-weight="bold">Upper Holding Tank</text>
+  <path d="M345 95 V270 H655 V95" fill="none" stroke="#333" stroke-width="8"/>
+  <g clip-path="url(#upperClip)">
+    <rect id="upperWater" x="355" y="190" width="290" height="70" fill="#69aee0"/>
+  </g>
+  <path id="upperWave" d="M355 190 L645 190" fill="none" stroke="#2f76ad" stroke-width="3"/>
+
+  <!-- Stage 3 external output: pond drain crosses the whole-system boundary -->
+  <path d="M755 455 H990" fill="none" stroke="#555" stroke-width="18"
+        stroke-linecap="round"/>
+  <path id="externalOutputFlow" d="M755 455 H990" fill="none" stroke="#3f8fc5" stroke-width="8"
+        stroke-linecap="round" stroke-dasharray="18 14" opacity="0"/>
+  <polygon id="outputArrow" points="963,443 990,455 963,467" fill="#3f8fc5" opacity="0"/>
+  <text x="835" y="438" font-size="16" font-weight="bold">OUTPUT PIPE</text>
+
+  <!-- lower pond -->
+  <text x="500" y="338" text-anchor="middle" font-size="22" font-weight="bold">Lower Storage Pond</text>
+  <path d="M180 370 Q500 325 820 370 L765 515 H235 Z" fill="none" stroke="#333" stroke-width="8"/>
+  <g clip-path="url(#lowerClip)">
+    <rect id="lowerWater" x="185" y="405" width="630" height="105" fill="#69aee0"/>
+  </g>
+  <path id="lowerWave" d="M205 405 L795 405" fill="none" stroke="#2f76ad" stroke-width="3"/>
+
+  <!-- gravity pipe: upper tank to lower pond -->
+  <path d="M655 220 H735 V405 H790" fill="none" stroke="#555" stroke-width="16" stroke-linejoin="round"/>
+  <path id="gravityFlow" d="M655 220 H735 V405 H790" fill="none" stroke="#3f8fc5" stroke-width="7" stroke-linejoin="round" stroke-dasharray="18 14" opacity="0"/>
+  <polygon id="gravityArrow" points="766,394 790,405 766,416" fill="#3f8fc5" opacity="0"/>
+  <text x="755" y="300" font-size="16" font-weight="bold">Gravity flow</text>
+  <text x="755" y="319" font-size="16" font-weight="bold">down</text>
+
+  <!-- separate pump pipe: lower pond to upper tank, on left -->
+  <circle cx="165" cy="315" r="30" fill="#eee" stroke="#333" stroke-width="5"/>
+  <text x="165" y="321" text-anchor="middle" font-size="15" font-weight="bold">PUMP</text>
+  <path d="M210 440 H125 V180 H345" fill="none" stroke="#555" stroke-width="16" stroke-linejoin="round"/>
+  <path id="transferFlow" d="M210 440 H125 V180 H345" fill="none" stroke="#3f8fc5" stroke-width="7" stroke-linejoin="round" stroke-dasharray="18 14" opacity="0"/>
+  <polygon id="arrow" points="320,169 345,180 320,191" fill="#3f8fc5" opacity="0"/>
+  <text x="250" y="265" text-anchor="middle" font-size="16" font-weight="bold">Pump flow up</text>
+  <text x="250" y="284" text-anchor="middle" font-size="15">internal transfer</text>
+</svg>
+</div>
+
+<div class="metrics">
+ <div class="metric"><strong>Upper reservoir</strong><span id="upperVal" class="value">40 units</span></div>
+ <div class="metric"><strong>Lower reservoir</strong><span id="lowerVal" class="value">60 units</span></div>
+ <div class="metric"><strong>Total stored in system</strong><span id="totalVal" class="value">100 units</span></div>
+ <div class="metric"><strong>External net change</strong><span id="externalVal" class="value">0 units/s</span></div>
+ <div class="metric"><strong>Internal transfer</strong><span id="transferVal" class="value">0 units/s</span></div>
+</div>
+</div>
+
+<div class="controls">
+<button id="transferBtn">PUMP WATER TO UPPER TANK</button>
+<button id="inputBtn" disabled>ADD WATER FROM OUTSIDE SYSTEM</button>
+<button id="returnBtn" disabled>LET WATER FLOW DOWN BY GRAVITY</button>
+<button id="outputBtn" disabled>REMOVE WATER FROM SYSTEM</button>
+<button id="resetBtn">RESET</button>
+<div id="status" class="status">The system begins with 100 total units of water.</div>
+</div>
+
+<div class="key">
+<strong>Watch the TOTAL:</strong> Does moving water from one reservoir to another add water to Farmer John’s whole system?
+</div>
+</div>
+
+<script>
+(() => {
+ const upperWater=document.getElementById('upperWater'), lowerWater=document.getElementById('lowerWater');
+ const upperWave=document.getElementById('upperWave'), lowerWave=document.getElementById('lowerWave');
+ const upperVal=document.getElementById('upperVal'), lowerVal=document.getElementById('lowerVal'), totalVal=document.getElementById('totalVal');
+ const externalVal=document.getElementById('externalVal'), transferVal=document.getElementById('transferVal');
+ const transferFlow=document.getElementById('transferFlow'), arrow=document.getElementById('arrow');
+ const gravityFlow=document.getElementById('gravityFlow'), gravityArrow=document.getElementById('gravityArrow');
+ const transferBtn=document.getElementById('transferBtn'), returnBtn=document.getElementById('returnBtn'), resetBtn=document.getElementById('resetBtn');
+ const status=document.getElementById('status');
+ const inputBtn=document.getElementById('inputBtn');
+ const outputBtn=document.getElementById('outputBtn');
+ const externalInputFlow=document.getElementById('externalInputFlow');
+ const inputArrow=document.getElementById('inputArrow');
+ const externalOutputFlow=document.getElementById('externalOutputFlow');
+ const outputArrow=document.getElementById('outputArrow');
+
+ let upper=40, lower=60, mode='idle', last=performance.now(), phase=0;
+ let inputStartTotal=100, inputTargetTotal=120;
+ let outputStartTotal=120, outputTargetTotal=100;
+ let pumpCompleted=false, inputCompleted=false, gravityAfterInputCompleted=false;
+
+ function upperY(){ return 260-(upper/100)*170; }
+ function lowerY(){ return 500-(lower/100)*158; }
+
+ function updateWater(){
+   const uy=upperY(), ly=lowerY();
+   upperWater.setAttribute('y',uy); upperWater.setAttribute('height',260-uy);
+   lowerWater.setAttribute('y',ly); lowerWater.setAttribute('height',510-ly);
+   upperVal.textContent=upper.toFixed(0)+' units';
+   lowerVal.textContent=lower.toFixed(0)+' units';
+   totalVal.textContent=(upper+lower).toFixed(0)+' units';
+ }
+
+ function waves(t){
+   const p=t/260;
+   let d=''; for(let x=355;x<=645;x+=12){let y=upperY()+Math.sin((x-355)/17+p)*2.6;d+=(x===355?'M':' L')+x+' '+y} upperWave.setAttribute('d',d);
+   d=''; for(let x=205;x<=795;x+=14){let y=lowerY()+Math.sin((x-205)/20+p)*2.6;d+=(x===205?'M':' L')+x+' '+y} lowerWave.setAttribute('d',d);
+   transferFlow.setAttribute('stroke-dashoffset', String(-(t/25)%64));
+   gravityFlow.setAttribute('stroke-dashoffset', String(-(t/25)%64));
+   externalInputFlow.setAttribute('stroke-dashoffset', String(-(t/25)%64));
+   externalOutputFlow.setAttribute('stroke-dashoffset', String(-(t/25)%64));
+ }
+
+ function setFlow(kind){
+   const pumpOn = kind==='pump', gravityOn = kind==='gravity';
+   transferFlow.setAttribute('opacity',pumpOn?'1':'0'); arrow.setAttribute('opacity',pumpOn?'1':'0');
+   gravityFlow.setAttribute('opacity',gravityOn?'1':'0'); gravityArrow.setAttribute('opacity',gravityOn?'1':'0');
+   transferVal.textContent=(pumpOn||gravityOn)?'4 units/s':'0 units/s';
+ }
+
+ function frame(t){
+   const dt=Math.min((t-last)/1000,.08); last=t; waves(t);
+   if(mode==='up'){
+     setFlow('pump');
+     const move=Math.min(4*dt,70-upper,lower);
+     upper+=move; lower-=move;
+     if(upper>=70){
+       mode='idle'; setFlow('none');
+       transferBtn.disabled=true;
+       returnBtn.disabled=true;
+       inputBtn.disabled=false;
+       outputBtn.disabled=true;
+       pumpCompleted=true;
+       status.textContent='Water changed reservoirs, but total system storage stayed at 100 units. Now add water from outside the system.';
+     }
+     updateWater();
+   } else if(mode==='down'){
+     setFlow('gravity');
+     const totalNow=upper+lower;
+     const targetUpper=40;
+     const targetLower=totalNow-targetUpper;
+     const move=Math.min(4*dt,Math.max(0,upper-targetUpper));
+     upper-=move; lower+=move;
+     if(upper<=targetUpper+0.001){
+       upper=targetUpper;
+       lower=targetLower;
+       mode='idle'; setFlow('none');
+       transferBtn.disabled=true;
+       returnBtn.disabled=true;
+       inputBtn.disabled=true;
+       outputBtn.disabled=false;
+       gravityAfterInputCompleted=true;
+       status.textContent=`Water moved down between reservoirs, but total system storage stayed at ${totalNow.toFixed(0)} units. Now remove water from the system.`;
+     }
+     updateWater();
+   } else if(mode==='input'){
+     externalInputFlow.setAttribute('opacity','1'); inputArrow.setAttribute('opacity','1');
+     externalVal.textContent='4 units/s';
+     const remaining=Math.max(0,inputTargetTotal-(upper+lower));
+     const addAmt=Math.min(4*dt,remaining);
+     upper+=addAmt;
+     if((upper+lower)>=inputTargetTotal-0.001){
+       upper += inputTargetTotal-(upper+lower);
+       mode='idle';
+       externalInputFlow.setAttribute('opacity','0'); inputArrow.setAttribute('opacity','0');
+       externalVal.textContent='0 units/s';
+       inputBtn.disabled=true;
+       outputBtn.disabled=true;
+       inputCompleted=true;
+       gravityAfterInputCompleted=false;
+       transferBtn.disabled=true;
+       returnBtn.disabled=false;
+       pumpCompleted=true;
+       status.textContent=`20 units crossed the SYSTEM boundary. Total system storage increased from ${inputStartTotal.toFixed(0)} to ${inputTargetTotal.toFixed(0)} units. Now let the water flow down by gravity.`;
+     }
+     updateWater();
+   } else if(mode==='output'){
+     externalOutputFlow.setAttribute('opacity','1'); outputArrow.setAttribute('opacity','1');
+     externalVal.textContent='−4 units/s';
+     const remaining=Math.max(0,(upper+lower)-outputTargetTotal);
+     const removeAmt=Math.min(4*dt,remaining);
+     lower-=removeAmt;
+     if(lower<0){
+       upper+=lower;
+       lower=0;
+     }
+     if((upper+lower)<=outputTargetTotal+0.001){
+       const correction=(upper+lower)-outputTargetTotal;
+       if(lower>=correction) lower-=correction;
+       else upper-=correction;
+       mode='idle';
+       externalOutputFlow.setAttribute('opacity','0'); outputArrow.setAttribute('opacity','0');
+       externalVal.textContent='0 units/s';
+       outputBtn.disabled=true;
+       transferBtn.disabled=true;
+       returnBtn.disabled=true;
+       inputBtn.disabled=true;
+       status.textContent=`20 units crossed the SYSTEM boundary outward. Total system storage decreased from ${outputStartTotal.toFixed(0)} to ${outputTargetTotal.toFixed(0)} units. The sequence is complete; RESET to run it again.`;
+     }
+     updateWater();
+   }
+   requestAnimationFrame(frame);
+ }
+
+ transferBtn.onclick=()=>{mode='up';transferBtn.disabled=true;returnBtn.disabled=true;inputBtn.disabled=true;outputBtn.disabled=true;status.textContent='The pump is moving water across an INTERNAL boundary between reservoirs.';};
+ returnBtn.onclick=()=>{mode='down';transferBtn.disabled=true;returnBtn.disabled=true;inputBtn.disabled=true;outputBtn.disabled=true;status.textContent='Water is flowing down by gravity through a separate pipe, still inside the same system.';};
+ inputBtn.onclick=()=>{
+   inputStartTotal=upper+lower;
+   inputTargetTotal=inputStartTotal+20;
+   mode='input';
+   transferBtn.disabled=true;returnBtn.disabled=true;inputBtn.disabled=true;outputBtn.disabled=true;
+   status.textContent='Water is now crossing the dashed SYSTEM boundary from outside to inside.';
+ };
+ outputBtn.onclick=()=>{
+   outputStartTotal=upper+lower;
+   outputTargetTotal=Math.max(0,outputStartTotal-20);
+   mode='output';
+   transferBtn.disabled=true;returnBtn.disabled=true;inputBtn.disabled=true;outputBtn.disabled=true;
+   status.textContent='Water is now crossing the dashed SYSTEM boundary from inside to outside.';
+ };
+ resetBtn.onclick=()=>{upper=40;lower=60;inputStartTotal=100;inputTargetTotal=120;outputStartTotal=120;outputTargetTotal=100;pumpCompleted=false;inputCompleted=false;gravityAfterInputCompleted=false;mode='idle';setFlow('none');externalInputFlow.setAttribute('opacity','0');inputArrow.setAttribute('opacity','0');externalOutputFlow.setAttribute('opacity','0');outputArrow.setAttribute('opacity','0');transferBtn.disabled=false;returnBtn.disabled=true;inputBtn.disabled=true;outputBtn.disabled=true;externalVal.textContent='0 units/s';status.textContent='The system begins with 100 total units of water.';updateWater();};
+ updateWater(); requestAnimationFrame(frame);
+})();
+</script>
+</body></html>
