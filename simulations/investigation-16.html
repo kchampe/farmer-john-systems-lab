@@ -121,7 +121,7 @@ button:disabled{opacity:.35;cursor:default}
  <path d="M250 130 Q500 95 750 130 L705 350 Q500 390 295 350Z" fill="#4d4d4d" stroke="#555" stroke-width="3"/>
  <g clip-path="url(#pondClip16)">
   <rect id="pondWater16" x="220" y="155" width="560" height="220" fill="#9ec9e6"/>
-  <line id="pondLevel16" x1="260" y1="155" x2="740" y2="155" stroke="#2878b5" stroke-width="4"/>
+  <path id="pondLevel16" d="M260 155 H740" fill="none" stroke="#2878b5" stroke-width="4"/>
  </g>
  <text id="linerLabel16" x="500" y="330" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">DARK POND LINER</text>
  <path id="evap1_16" class="flow" d="M410 145 Q395 95 420 55" fill="none" stroke="#7aa6be" stroke-width="5" marker-end="url(#pondArrow16)"/>
@@ -286,11 +286,20 @@ const pondStatus=document.getElementById('pondStatus16');
 const pondMapping=document.getElementById('pondMapping16');
 const evapPaths=['evap1_16','evap2_16','evap3_16'].map(id=>document.getElementById(id));
 let pondRun=0;
+let pondSurfaceY=155;
 function setPondLevel(y){
+ pondSurfaceY=y;
  pondWater.setAttribute('y',String(y));
  pondWater.setAttribute('height',String(375-y));
- pondLevel.setAttribute('y1',String(y));
- pondLevel.setAttribute('y2',String(y));
+}
+function animatePondSurface(now){
+ let d='';
+ for(let x=260;x<=740;x+=20){
+  const y=pondSurfaceY+Math.sin((x-260)/27+now/430)*3.2;
+  d+=(x===260?'M':' L')+x+' '+y.toFixed(1);
+ }
+ pondLevel.setAttribute('d',d);
+ requestAnimationFrame(animatePondSurface);
 }
 function resetPond(){
  pondRun++;
@@ -334,6 +343,7 @@ function runPond(){
 }
 pondRunBtn.addEventListener('click',runPond);
 pondResetBtn.addEventListener('click',resetPond);
+requestAnimationFrame(animatePondSurface);
 </script>
 </body>
 </html>
