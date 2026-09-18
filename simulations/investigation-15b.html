@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Investigation 15B — Added Greenhouse Gases V15.4</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#fff;color:#111}
+.wrap{max-width:1050px;margin:0 auto;padding:10px}
+h1{text-align:center;margin:4px 0;font-size:24px}
+.sub{text-align:center;margin:4px 0 10px;font-size:15px}
+.stage{border:1.5px solid #999;padding:8px}
+svg{width:84%;height:auto;display:block;margin:0 auto}
+.controls{text-align:center;margin:10px 0}
+button{font-size:14px;font-weight:700;padding:8px 12px;margin:3px;border:2px solid #555;border-radius:7px;background:#fff;cursor:pointer}
+button:disabled{opacity:.35;cursor:default}
+.status{padding:7px 8px 5px;text-align:center;font-size:16px;font-weight:700;margin:8px auto;max-width:820px}
+.prompt{border:2px solid #777;border-radius:7px;padding:10px;margin:8px auto 0;max-width:860px;font-size:15px;line-height:1.4}
+.flow{stroke-dasharray:17 13;animation:flow 1.05s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-60}}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Investigation 15B — Adding More Greenhouse Gases</h1>
+<p class="sub">Begin with Earth already in its natural greenhouse equilibrium.</p>
+
+<div class="stage">
+<svg viewBox="0 0 1100 610" role="img" aria-label="Earth energy system responding to additional greenhouse gases and reaching a new warmer equilibrium">
+<defs>
+ <marker id="arr2" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth">
+   <path d="M0,0 L5,2.5 L0,5 Z" fill="#666"/>
+ </marker>
+</defs>
+
+<ellipse cx="650" cy="305" rx="285" ry="250" fill="none" stroke="#777" stroke-width="3" stroke-dasharray="12 10"/>
+<text x="650" y="42" text-anchor="middle" font-size="19" font-weight="700">EARTH-SYSTEM BOUNDARY</text>
+<text x="970" y="65" font-size="18" font-weight="700">SPACE</text>
+
+<circle cx="115" cy="300" r="62" fill="#f4d34f" stroke="#555" stroke-width="2"/>
+<text x="115" y="307" text-anchor="middle" font-size="21" font-weight="700">SUN</text>
+
+<path class="flow" d="M185 300 H500" fill="none" stroke="#d2a600" stroke-width="8"/>
+<polygon points="474,288 502,300 474,312" fill="#d2a600"/>
+<text x="335" y="270" text-anchor="middle" font-size="17" font-weight="700">ENERGY IN</text>
+
+<path class="flow" d="M530 260 Q440 205 350 165" fill="none" stroke="#aaa" stroke-width="5" marker-end="url(#arr2)"/>
+<text x="385" y="190" font-size="14" font-weight="700">SOME REFLECTED</text>
+
+<circle cx="650" cy="335" r="125" fill="#d9e4d1" stroke="#555" stroke-width="3"/>
+<text x="650" y="342" text-anchor="middle" font-size="22" font-weight="700">EARTH</text>
+
+<circle cx="650" cy="335" r="166" fill="none" stroke="#9aa5ad" stroke-width="17" opacity=".35"/>
+<text x="650" y="150" text-anchor="middle" font-size="16" font-weight="700">ATMOSPHERE</text>
+
+<g id="baseGhg">
+ <circle cx="750" cy="210" r="8" fill="#888"/>
+ <circle cx="810" cy="260" r="8" fill="#888"/>
+ <circle cx="790" cy="385" r="8" fill="#888"/>
+ <circle cx="555" cy="205" r="8" fill="#888"/>
+ <circle cx="510" cy="340" r="8" fill="#888"/>
+</g>
+<text x="865" y="285" font-size="14" font-weight="700">GREENHOUSE GASES</text>
+
+<g id="moreGhg" class="hidden">
+ <circle cx="835" cy="330" r="8" fill="#666"/>
+ <circle cx="835" cy="405" r="8" fill="#666"/>
+ <circle cx="735" cy="465" r="8" fill="#666"/>
+ <circle cx="585" cy="475" r="8" fill="#666"/>
+ <circle cx="485" cy="400" r="8" fill="#666"/>
+ <circle cx="490" cy="270" r="8" fill="#666"/>
+ <circle cx="590" cy="185" r="8" fill="#666"/>
+ <circle cx="700" cy="175" r="8" fill="#666"/>
+</g>
+
+<path id="energyOut" class="flow" d="M790 220 Q845 155 930 105" fill="none" stroke="#8d69a5" stroke-width="8" opacity="1" marker-end="url(#arr2)"/>
+<path class="flow" d="M790 235 Q755 285 720 315" fill="none" stroke="#777" stroke-width="5" marker-end="url(#arr2)"/>
+
+<rect x="485" y="520" width="330" height="32" rx="6" fill="#eee" stroke="#777"/>
+<rect id="bar2" x="487" y="522" width="157" height="28" rx="4" fill="#bbb"/>
+<text x="650" y="580" text-anchor="middle" font-size="16" font-weight="700">RELATIVE ENERGY STORED IN EARTH SYSTEM</text>
+</svg>
+
+<div id="status2" class="status" aria-live="polite">NATURAL GREENHOUSE EQUILIBRIUM — BALANCED</div>
+
+<div class="controls">
+<button id="moreBtn">ADD MORE GREENHOUSE GASES</button>
+<button id="continueBtn" disabled>CONTINUE TO NEW EQUILIBRIUM</button>
+<button id="resetBtn2">RESET</button>
+</div>
+</div>
+
+<div class="prompt">
+<b>Start:</b> Earth already has an atmosphere and a natural greenhouse effect. Energy entering from the Sun is balanced by energy leaving to space.
+</div>
+
+<div id="imbalance" class="prompt hidden">
+<b>Energy imbalance:</b> At the old temperature, the Earth system is less effective at losing energy to space. Energy accumulates and the system begins to warm.
+</div>
+
+<div id="newEq" class="prompt hidden">
+<b>New equilibrium:</b> As the Earth system warms, it emits more thermal radiation. Eventually outgoing energy once again balances incoming energy, but the system now contains more stored energy and is warmer than before.
+</div>
+</div>
+
+<script>
+const moreBtn=document.getElementById('moreBtn');
+const continueBtn=document.getElementById('continueBtn');
+const moreGhg=document.getElementById('moreGhg');
+const energyOut=document.getElementById('energyOut');
+const status2=document.getElementById('status2');
+const bar2=document.getElementById('bar2');
+const imbalance=document.getElementById('imbalance');
+const newEq=document.getElementById('newEq');
+let timer2=null,level2=48;
+
+function setLevel2(v){
+ level2=v;
+ bar2.setAttribute('width',Math.max(18,326*v/100));
+}
+
+function setOutgoing2(visible){
+ energyOut.style.opacity=visible?'1':'0';
+ energyOut.setAttribute('stroke-width',visible?'8':'0');
+}
+
+function animateTo2(target,callback){
+ clearInterval(timer2);
+ timer2=setInterval(()=>{
+   level2+=(target-level2)*.035;
+   setLevel2(level2);
+   if(Math.abs(target-level2)<.35){
+     level2=target;
+     setLevel2(level2);
+     clearInterval(timer2);
+     if(callback)callback();
+   }
+ },35);
+}
+
+moreBtn.onclick=()=>{
+ moreGhg.style.display='block';
+ setOutgoing2(false);
+ imbalance.style.display='none';
+ newEq.style.display='none';
+ status2.textContent='MORE GREENHOUSE GASES — GAINING ENERGY AND WARMING';
+ moreBtn.disabled=true;
+ animateTo2(62,()=>{
+   imbalance.style.display='block';
+   status2.textContent='THE SYSTEM IS WARMING — WHAT MUST CHANGE BEFORE A NEW EQUILIBRIUM CAN BE REACHED?';
+   continueBtn.disabled=false;
+ });
+};
+
+continueBtn.onclick=()=>{
+ continueBtn.disabled=true;
+ status2.textContent='WARMING CONTINUES — STORED ENERGY IS INCREASING';
+ animateTo2(74,()=>{
+   setOutgoing2(true);
+   newEq.style.display='block';
+   status2.textContent='NEW WARMER EQUILIBRIUM — BALANCED, STILL HIGHER STORED ENERGY';
+ });
+};
+
+document.getElementById('resetBtn2').onclick=()=>{
+ clearInterval(timer2);
+ level2=48;
+ setLevel2(level2);
+ moreGhg.style.display='none';
+ setOutgoing2(true);
+ imbalance.style.display='none';
+ newEq.style.display='none';
+ status2.textContent='NATURAL GREENHOUSE EQUILIBRIUM — BALANCED';
+ moreBtn.disabled=false;
+ continueBtn.disabled=true;
+};
+
+setLevel2(level2);
+</script>
+</body>
+</html>
