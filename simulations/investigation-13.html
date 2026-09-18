@@ -24,8 +24,8 @@ button:disabled{opacity:.4;cursor:not-allowed}.metrics{display:grid;grid-templat
 
 </head>
 <body><div class="wrap">
-<h1>Investigation 13 — The Earth as an Energy System</h1>
-<div class="sub">Watch energy enter, accumulate in storage, and then leave until the whole Earth system reaches dynamic equilibrium.</div>
+<h1>Investigation 13 — When Earth’s Energy Balance Changes</h1>
+<div class="sub">Begin at dynamic equilibrium, restrict effective energy loss, and observe how Earth reaches a new warmer equilibrium.</div>
 
 <svg viewBox="0 0 1060 600" aria-label="Simple whole-Earth energy balance model">
 <defs>
@@ -49,17 +49,17 @@ button:disabled{opacity:.4;cursor:not-allowed}.metrics{display:grid;grid-templat
 
   <!-- incoming -->
   <path d="M195 280 H470" fill="none" stroke="#777" stroke-width="15" stroke-linecap="round" opacity=".25"/>
-  <path id="inFlow" d="M195 280 H470" fill="none" stroke="#d2a600" stroke-width="8" stroke-dasharray="18 14" stroke-linecap="round" opacity="0"/>
-  <polygon id="inArrow" points="444,268 472,280 444,292" fill="#d2a600" opacity="0"/>
-  <text id="inLabel" x="330" y="250" text-anchor="middle" font-size="18" font-weight="bold" opacity="0">ENERGY IN</text>
-  <text id="inSub" x="330" y="271" text-anchor="middle" font-size="15" opacity="0">incoming solar energy</text>
+  <path id="inFlow" d="M195 280 H470" fill="none" stroke="#d2a600" stroke-width="8" stroke-dasharray="18 14" stroke-linecap="round" opacity="1"/>
+  <polygon id="inArrow" points="444,268 472,280 444,292" fill="#d2a600" opacity="1"/>
+  <text id="inLabel" x="330" y="250" text-anchor="middle" font-size="18" font-weight="bold" opacity="1">ENERGY IN</text>
+  <text id="inSub" x="330" y="271" text-anchor="middle" font-size="15" opacity="1">incoming solar energy</text>
 
   <!-- outgoing -->
   <path d="M775 245 Q875 185 980 145" fill="none" stroke="#777" stroke-width="15" stroke-linecap="round" opacity=".25"/>
-  <path id="outFlow" d="M775 245 Q875 185 980 145" fill="none" stroke="#8d69a5" stroke-width="8" stroke-dasharray="18 14" stroke-linecap="round" opacity="0"/>
-  <polygon id="outArrow" points="952,140 982,145 960,163" fill="#8d69a5" opacity="0"/>
-  <text id="outLabel" x="870" y="205" text-anchor="middle" font-size="18" font-weight="bold" opacity="0">ENERGY OUT</text>
-  <text id="outSub" x="870" y="226" text-anchor="middle" font-size="15" opacity="0">outgoing radiation</text>
+  <path id="outFlow" d="M775 245 Q875 185 980 145" fill="none" stroke="#8d69a5" stroke-width="8" stroke-dasharray="18 14" stroke-linecap="round" opacity="1"/>
+  <polygon id="outArrow" points="952,140 982,145 960,163" fill="#8d69a5" opacity="1"/>
+  <text id="outLabel" x="870" y="205" text-anchor="middle" font-size="18" font-weight="bold" opacity="1">ENERGY OUT</text>
+  <text id="outSub" x="870" y="226" text-anchor="middle" font-size="15" opacity="1">outgoing radiation</text>
 
   <!-- storage indicator -->
   <rect x="515" y="500" width="270" height="42" rx="8" fill="#eee" stroke="#777"/>
@@ -79,20 +79,20 @@ button:disabled{opacity:.4;cursor:not-allowed}.metrics{display:grid;grid-templat
 </svg>
 
 <div class="controls">
-<button id="inputBtn">TURN ON ENERGY IN</button>
-<button id="outputBtn" disabled>TURN ON ENERGY OUT</button>
+<button id="inputBtn" hidden disabled>TURN ON ENERGY IN</button>
+<button id="outputBtn" hidden disabled>TURN ON ENERGY OUT</button>
 <button id="reduceOutBtn" disabled>RESTRICT ENERGY OUT</button>
         <button id="responseBtn" disabled>ALLOW EARTH TO RESPOND</button>
         <button id="resetBtn">RESET</button>
 </div>
 
 <div class="metrics">
-<div class="metric"><b>Energy IN</b><span id="inVal" class="v">0</span></div>
-<div class="metric"><b>Energy OUT</b><span id="outVal" class="v">0</span></div>
-<div class="metric"><b>System balance</b><span id="netVal" class="v">No flow</span></div>
-<div class="metric"><b>Relative stored energy</b><span id="storeVal" class="v">0</span></div>
+<div class="metric"><b>Energy IN</b><span id="inVal" class="v">100</span></div>
+<div class="metric"><b>Energy OUT</b><span id="outVal" class="v">100</span></div>
+<div class="metric"><b>System balance</b><span id="netVal" class="v">Balanced</span></div>
+<div class="metric"><b>Relative stored energy</b><span id="storeVal" class="v">50</span></div>
 </div>
-<div id="status" class="status">The storage indicator begins at 0 so you can watch energy accumulate visually. Turn on energy IN first.</div>
+<div id="status" class="status">STARTING EQUILIBRIUM: Energy IN = Energy OUT, so stored energy remains constant at 50. Restrict Energy OUT to change the system.</div>
 </div>
 
 <script>
@@ -117,10 +117,10 @@ const storeVal=document.getElementById('storeVal');
 const status=document.getElementById('status');
 const storeBar=document.getElementById('storeBar');
 
-let incoming=0;
-let outgoing=0;
-let stored=0;
-let mode='idle';
+let incoming=100;
+let outgoing=100;
+let stored=50;
+let mode='equilibrium';
 let last=performance.now();
 
 function vis(arr,on){arr.forEach(e=>e.setAttribute('opacity',on?1:0));}
@@ -201,15 +201,7 @@ outputBtn.onclick=()=>{
 };
 
 resetBtn.onclick=()=>{
-  incoming=0;
-  outgoing=0;
-  stored=0;
-  mode='idle';
-  vis([inFlow,inArrow,inLabel,inSub,outFlow,outArrow,outLabel,outSub],false);
-  inputBtn.disabled=false;
-  outputBtn.disabled=true;
-  status.textContent='The storage indicator begins at 0 so you can watch energy accumulate visually. Turn on energy IN first.';
-  update();
+  window.location.reload();
 };
 
 update();
