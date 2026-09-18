@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Investigation 12 — Earth Energy Balance V12.4</title>
+<style>
+body{margin:0;background:#f3f3f3;font-family:Arial,Helvetica,sans-serif;color:#222}
+.wrap{max-width:1120px;margin:18px auto;background:#fff;border:1px solid #bbb;padding:18px 22px}
+h1{text-align:center;margin:0 0 5px;font-size:28px}.sub{text-align:center;margin-bottom:12px}
+svg{width:100%;height:auto;border:1px solid #ccc;background:#fff}
+.controls{text-align:center;margin:13px 0}button{padding:10px 15px;margin:4px;font-weight:bold;font-size:15px;border:2px solid #333;border-radius:6px;background:#fff;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.metric{text-align:center;border:1px solid #aaa;padding:9px;background:#fafafa}.metric b{display:block;font-size:13px}.v{font-size:22px;font-weight:bold}
+.status{margin-top:11px;padding:11px;border:1px solid #aaa;background:#fafafa;text-align:center;font-weight:bold;min-height:44px}
+@media(max-width:700px){.metrics{grid-template-columns:1fr 1fr}}
+</style></head>
+<body><div class="wrap">
+<h1>Investigation 12 — The Earth as an Energy System</h1>
+<div class="sub">Watch energy enter, accumulate in storage, and then leave until the whole Earth system reaches dynamic equilibrium.</div>
+
+<svg viewBox="0 0 1060 600" aria-label="Simple whole-Earth energy balance model">
+  <text x="925" y="55" font-size="20" font-weight="bold">SPACE</text>
+  <circle cx="120" cy="280" r="65" fill="#f4d34f" stroke="#555" stroke-width="2"/>
+  <text x="120" y="287" text-anchor="middle" font-size="22" font-weight="bold">SUN</text>
+
+  <ellipse cx="650" cy="305" rx="265" ry="245" fill="none" stroke="#666" stroke-width="3" stroke-dasharray="12 10"/>
+  <text x="650" y="48" text-anchor="middle" font-size="20" font-weight="bold">EARTH-SYSTEM BOUNDARY</text>
+
+  <circle cx="650" cy="315" r="135" fill="#e8edf1" stroke="#555" stroke-width="3"/>
+  <circle cx="650" cy="315" r="103" fill="#d8e4d3" stroke="#777" stroke-width="1.5"/>
+  <text x="650" y="322" text-anchor="middle" font-size="23" font-weight="bold">EARTH SYSTEM</text>
+  <text x="650" y="350" text-anchor="middle" font-size="16">treated first as one whole system</text>
+
+  <!-- incoming -->
+  <path d="M195 280 H470" fill="none" stroke="#777" stroke-width="15" stroke-linecap="round" opacity=".25"/>
+  <path id="inFlow" d="M195 280 H470" fill="none" stroke="#d2a600" stroke-width="8" stroke-dasharray="18 14" stroke-linecap="round" opacity="0"/>
+  <polygon id="inArrow" points="444,268 472,280 444,292" fill="#d2a600" opacity="0"/>
+  <text id="inLabel" x="330" y="250" text-anchor="middle" font-size="18" font-weight="bold" opacity="0">ENERGY IN</text>
+  <text id="inSub" x="330" y="271" text-anchor="middle" font-size="15" opacity="0">incoming solar energy</text>
+
+  <!-- outgoing -->
+  <path d="M775 245 Q875 185 980 145" fill="none" stroke="#777" stroke-width="15" stroke-linecap="round" opacity=".25"/>
+  <path id="outFlow" d="M775 245 Q875 185 980 145" fill="none" stroke="#8d69a5" stroke-width="8" stroke-dasharray="18 14" stroke-linecap="round" opacity="0"/>
+  <polygon id="outArrow" points="952,140 982,145 960,163" fill="#8d69a5" opacity="0"/>
+  <text id="outLabel" x="870" y="205" text-anchor="middle" font-size="18" font-weight="bold" opacity="0">ENERGY OUT</text>
+  <text id="outSub" x="870" y="226" text-anchor="middle" font-size="15" opacity="0">radiation lost to space</text>
+
+  <!-- storage indicator -->
+  <rect x="515" y="500" width="270" height="42" rx="8" fill="#eee" stroke="#777"/>
+  <rect id="storeBar" x="517" y="502" width="133" height="38" rx="6" fill="#bbb"/>
+  <text x="650" y="570" text-anchor="middle" font-size="17" font-weight="bold">ENERGY STORED WITHIN EARTH SYSTEM</text>
+</svg>
+
+<div class="controls">
+<button id="inputBtn">TURN ON ENERGY IN</button>
+<button id="outputBtn" disabled>TURN ON ENERGY OUT</button>
+<button id="resetBtn">RESET</button>
+</div>
+
+<div class="metrics">
+<div class="metric"><b>Energy IN</b><span id="inVal" class="v">0</span></div>
+<div class="metric"><b>Energy OUT</b><span id="outVal" class="v">0</span></div>
+<div class="metric"><b>System balance</b><span id="netVal" class="v">No flow</span></div>
+<div class="metric"><b>Relative stored energy</b><span id="storeVal" class="v">0</span></div>
+</div>
+<div id="status" class="status">The storage indicator begins at 0 so you can watch energy accumulate visually. Turn on energy IN first.</div>
+</div>
+
+<script>
+const inputBtn=document.getElementById('inputBtn');
+const outputBtn=document.getElementById('outputBtn');
+const resetBtn=document.getElementById('resetBtn');
+
+const inFlow=document.getElementById('inFlow');
+const inArrow=document.getElementById('inArrow');
+const inLabel=document.getElementById('inLabel');
+const inSub=document.getElementById('inSub');
+
+const outFlow=document.getElementById('outFlow');
+const outArrow=document.getElementById('outArrow');
+const outLabel=document.getElementById('outLabel');
+const outSub=document.getElementById('outSub');
+
+const inVal=document.getElementById('inVal');
+const outVal=document.getElementById('outVal');
+const netVal=document.getElementById('netVal');
+const storeVal=document.getElementById('storeVal');
+const status=document.getElementById('status');
+const storeBar=document.getElementById('storeBar');
+
+let incoming=0;
+let outgoing=0;
+let stored=0;
+let mode='idle';
+let last=performance.now();
+
+function vis(arr,on){arr.forEach(e=>e.setAttribute('opacity',on?1:0));}
+
+function update(){
+  inVal.textContent=incoming.toFixed(0);
+  outVal.textContent=outgoing.toFixed(0);
+
+  const diff=incoming-outgoing;
+  if(incoming===0 && outgoing===0){
+    netVal.textContent='No flow';
+  } else if(Math.abs(diff)<1){
+    netVal.textContent='Balanced';
+  } else if(diff>0){
+    netVal.textContent='Gaining energy';
+  } else {
+    netVal.textContent='Losing energy';
+  }
+
+  storeVal.textContent=stored.toFixed(0);
+  storeBar.setAttribute('width',Math.max(0,266*stored/100));
+}
+
+function frame(t){
+  const dt=Math.min(.05,(t-last)/1000);
+  last=t;
+
+  inFlow.setAttribute('stroke-dashoffset',String(-(t/24)%64));
+  outFlow.setAttribute('stroke-dashoffset',String(-(t/24)%64));
+
+  if(mode==='filling'){
+    // Sun is on; energy enters faster than it leaves, so storage rises.
+    stored += 9*dt;
+    if(stored>=75){
+      stored=75;
+      mode='paused75';
+      outputBtn.disabled=false;
+      status.textContent='Stored energy has increased to 75. The system pauses here. Now turn on energy OUT and watch how the stored energy changes.';
+    }
+    update();
+  }
+  else if(mode==='draining'){
+    // Outgoing energy temporarily exceeds incoming energy, so storage decreases.
+    stored -= 8*dt;
+
+    // As the system approaches 50, outgoing energy adjusts toward the incoming rate.
+    outgoing = 100 + Math.max(0,(stored-50))*1.6;
+
+    if(stored<=50){
+      stored=50;
+      outgoing=100;
+      mode='equilibrium';
+      status.textContent='Dynamic equilibrium: energy is continuously entering and leaving, but ENERGY IN = ENERGY OUT. Stored energy remains constant at 50.';
+    }
+    update();
+  }
+
+  requestAnimationFrame(frame);
+}
+
+inputBtn.onclick=()=>{
+  incoming=100;
+  outgoing=0;
+  mode='filling';
+  vis([inFlow,inArrow,inLabel,inSub],true);
+  inputBtn.disabled=true;
+  status.textContent='The Sun is on. Energy crosses the Earth-system boundary inward, so the storage bar fills—just like water accumulating in Farmer John’s tank.';
+  update();
+};
+
+outputBtn.onclick=()=>{
+  mode='draining';
+  outgoing=140;
+  vis([outFlow,outArrow,outLabel,outSub],true);
+  outputBtn.disabled=true;
+  status.textContent='Energy is now leaving the Earth system to space faster than it is entering, so stored energy decreases toward a balanced state.';
+  update();
+};
+
+resetBtn.onclick=()=>{
+  incoming=0;
+  outgoing=0;
+  stored=0;
+  mode='idle';
+  vis([inFlow,inArrow,inLabel,inSub,outFlow,outArrow,outLabel,outSub],false);
+  inputBtn.disabled=false;
+  outputBtn.disabled=true;
+  status.textContent='The storage indicator begins at 0 so you can watch energy accumulate visually. Turn on energy IN first.';
+  update();
+};
+
+update();
+requestAnimationFrame(frame);
+</script></body></html>
