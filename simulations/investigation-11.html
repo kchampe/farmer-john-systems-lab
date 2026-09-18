@@ -22,6 +22,7 @@
   button:hover { background:#f1f5f9; }
   button:disabled, input:disabled { opacity:.55; cursor:not-allowed; }
   .rust { width:100%; margin-top:15px; padding:11px; }
+  #startBtn { width:100%; margin-bottom:10px; padding:11px; background:#e8f5ff; border:2px solid #2677a8; }
   .readout { margin-top:16px; border-top:1px solid var(--line); padding-top:10px; }
   .metric { display:flex; justify-content:space-between; gap:12px; padding:6px 0; }
   .metric span:first-child { color:#475569; }
@@ -43,7 +44,7 @@
         <path d="M160 42 H300 V92 H345" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M345 92 V126" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round"/>
         <text x="145" y="24" font-size="18" font-weight="700">Water IN</text>
-        <rect id="inStream" x="333" y="126" width="24" height="102" rx="10" fill="#60a5fa" opacity=".85"/>
+        <rect id="inStream" x="333" y="126" width="24" height="379" rx="10" fill="#60a5fa" opacity="0"/>
 
         <!-- bucket body -->
         <path d="M175 205 L210 505 Q350 535 490 505 L525 205" fill="#e2e8f0" stroke="#475569" stroke-width="7"/>
@@ -52,12 +53,12 @@
         </clipPath>
 
         <!-- water -->
-        <rect id="water" x="180" y="350" width="340" height="180" fill="#93c5fd" clip-path="url(#bucketClip)"/>
+        <rect id="water" x="180" y="505" width="340" height="24" fill="#93c5fd" clip-path="url(#bucketClip)"/>
         <path id="wave" d="" fill="none" stroke="#2563eb" stroke-width="4" clip-path="url(#bucketClip)"/>
 
         <!-- main outlet right -->
         <path d="M482 452 H605" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round"/>
-        <path id="outStream" d="M605 452 Q645 455 680 485" fill="none" stroke="#60a5fa" stroke-width="18" stroke-linecap="round" opacity=".85"/>
+        <path id="outStream" d="M605 452 Q645 455 680 485" fill="none" stroke="#60a5fa" stroke-width="0" stroke-linecap="round" opacity="0"/>
         <text x="545" y="420" font-size="17" font-weight="700">Main outlet</text>
 
         <!-- rust visual -->
@@ -81,11 +82,12 @@
           <path d="M518 215 Q550 230 555 300" fill="none" stroke="#60a5fa" stroke-width="12" stroke-linecap="round"/>
         </g>
 
-        <text id="levelText" x="350" y="390" text-anchor="middle" font-size="25" font-weight="700" fill="#0f172a">50% stored</text>
+        <text id="levelText" x="350" y="390" text-anchor="middle" font-size="25" font-weight="700" fill="#0f172a">0% stored</text>
       </svg>
     </div>
 
     <div class="card controls">
+      <button id="startBtn">TURN ON WATER</button>
       <div class="row" style="justify-content:space-between">
         <button id="pause">Pause</button>
         <button id="reset">Reset</button>
@@ -108,14 +110,14 @@
       <button class="rust" id="rustBtn">ADD RUST</button>
 
       <div class="readout">
-        <div class="metric"><span>Water stored</span><strong id="stored">50%</strong></div>
-        <div class="metric"><span>Actual main outlet</span><strong id="pipeOut">5.0 units/s</strong></div>
+        <div class="metric"><span>Water stored</span><strong id="stored">0%</strong></div>
+        <div class="metric"><span>Actual main outlet</span><strong id="pipeOut">0.0 units/s</strong></div>
         <div class="metric"><span>Level-dependent outlet</span><strong id="feedbackOut">0.0 units/s</strong></div>
-        <div class="metric"><span>Total water leaving</span><strong id="totalOut">5.0 units/s</strong></div>
+        <div class="metric"><span>Total water leaving</span><strong id="totalOut">0.0 units/s</strong></div>
         <div class="metric"><span>Net change in storage</span><strong id="net">0.0 units/s</strong></div>
       </div>
 
-      <div class="status" id="status">Dynamic equilibrium — water flows through, but storage is unchanged.</div>
+      <div class="status" id="status">The bucket is empty. Turn on the water and establish the initial equilibrium before adding rust.</div>
       <div class="note">The Water IN and Water OUT controls are intentionally fixed in this version.</div>
     </div>
   </div>
@@ -140,9 +142,11 @@
   const neededAtEq = input - rustPipeOut;
   const sideSlope = neededAtEq / (targetEqLevel - sideOutletLevel);
 
-  let level = initialLevel;
+  let level = 0;
   let rust = false;
   let paused = false;
+  let systemOn = false;
+  let startup = true;
   let last = performance.now();
 
   const $ = id => document.getElementById(id);
@@ -151,7 +155,12 @@
         overflow = $("overflow");
 
   function mainOutflow() {
+    if (!systemOn || level <= bottomOutletLevel) return 0;
     const desired = rust ? rustPipeOut : requestedOut;
+    if (startup) {
+      const fraction = Math.max(0, Math.min(1, (level-bottomOutletLevel)/(initialLevel-bottomOutletLevel)));
+      return Math.min(input, desired*fraction);
+    }
     if (level <= bottomOutletLevel + 0.002 && desired > input) return input;
     return desired;
   }
@@ -162,10 +171,11 @@
   }
 
   function calc() {
+    const actualIn = systemOn ? input : 0;
     let main = mainOutflow();
     let side = sideOutflow();
     let total = main + side;
-    let net = input - total;
+    let net = actualIn - total;
     let ov = 0;
 
     if (level >= 0.999 && net > 0) {
@@ -183,6 +193,8 @@
 
     water.setAttribute("y", y);
     water.setAttribute("height", bottom - y + 24);
+    $("inStream").setAttribute("height", Math.max(0, y-126));
+    $("inStream").setAttribute("opacity", systemOn ? ".85" : "0");
 
     let d = `M180 ${y}`;
     for (let x=180; x<=520; x+=18) {
@@ -201,7 +213,8 @@
     rustMarks.setAttribute("opacity", rust ? "1" : "0");
     overflow.setAttribute("opacity", c.ov > 0.02 ? "1" : "0");
 
-    outStream.setAttribute("stroke-width", Math.max(4, 4 + c.main*2.6));
+    outStream.setAttribute("stroke-width", c.main>0 ? Math.max(4, 4 + c.main*2.6) : 0);
+    outStream.setAttribute("opacity", c.main>0 ? ".85" : "0");
 
     // Side stream is completely absent until water reaches the outlet.
     if (c.side > 0.005) {
@@ -213,7 +226,13 @@
     }
 
     let msg;
-    if (!rust) {
+    if (!systemOn) {
+      msg = "The bucket is empty. Turn on the water and establish the initial equilibrium before adding rust.";
+    } else if (startup && level < bottomOutletLevel) {
+      msg = "Water is entering and accumulating. The level has not yet reached the main outlet.";
+    } else if (startup) {
+      msg = "Water is entering and leaving while storage rises. Watch the two flow rates approach one another.";
+    } else if (!rust) {
       msg = "Dynamic equilibrium — water flows through, but storage is unchanged.";
     } else if (c.ov > 0.02) {
       msg = "Bucket full — excess incoming water is overflowing.";
@@ -235,8 +254,14 @@
 
     if (!paused) {
       const c = calc();
-      level += c.net * dt * 0.018;
-      level = Math.max(bottomOutletLevel, Math.min(1, level));
+      level += c.net * dt * (startup ? 0.02 : 0.018);
+      level = Math.max(0, Math.min(1, level));
+      if (startup && systemOn && level >= 0.49) {
+        level = initialLevel;
+        startup = false;
+        $("startBtn").textContent = "WATER ON — EQUILIBRIUM REACHED";
+        $("rustBtn").disabled = false;
+      }
     }
 
     updateVisuals(calc());
@@ -249,21 +274,33 @@
     $("rustBtn").textContent = "RUST ADDED";
   });
 
+  $("startBtn").addEventListener("click", () => {
+    systemOn = true;
+    $("startBtn").disabled = true;
+    $("startBtn").textContent = "WATER RUNNING";
+    last = performance.now();
+  });
+
   $("pause").addEventListener("click", () => {
     paused = !paused;
     $("pause").textContent = paused ? "Resume" : "Pause";
   });
 
   $("reset").addEventListener("click", () => {
-    level = initialLevel;
+    level = 0;
     rust = false;
     paused = false;
+    systemOn = false;
+    startup = true;
     $("pause").textContent = "Pause";
-    $("rustBtn").disabled = false;
+    $("startBtn").disabled = false;
+    $("startBtn").textContent = "TURN ON WATER";
+    $("rustBtn").disabled = true;
     $("rustBtn").textContent = "ADD RUST";
     last = performance.now();
   });
 
+  $("rustBtn").disabled = true;
   updateVisuals(calc());
   requestAnimationFrame(step);
 })();
