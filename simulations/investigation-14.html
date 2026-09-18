@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Investigation 14 — Map the Systems V14.5</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#fff;color:#111}
+.wrap{max-width:1320px;margin:0 auto;padding:8px}
+h1{text-align:center;margin:4px 0 6px;font-size:24px}
+.sub{text-align:center;margin:0 0 14px;font-size:15px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.panel{border:1.5px solid #999;padding:6px;background:#fff}
+.panel h2{text-align:center;margin:4px 0 8px;font-size:22px}
+svg{width:88%;height:auto;display:block;margin:0 auto}
+.eq{margin:8px auto 0;text-align:center;font-size:17px;font-weight:700;border:2px solid #555;padding:6px;border-radius:7px;max-width:340px}
+.prompt{border:2px solid #555;border-radius:8px;padding:14px;margin-top:10px;font-size:17px;line-height:1.5}
+.controls{text-align:center;margin-top:8px}
+button{font-size:14px;font-weight:700;padding:7px 11px;border:2px solid #555;border-radius:7px;background:#fff}
+.mapping{display:none;border:2px solid #333;border-radius:8px;padding:14px;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:16px}
+th,td{border:1px solid #aaa;padding:9px;text-align:left}
+.flow{stroke-dasharray:18 14;animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-64}}
+.map-target{transition:filter .2s, opacity .2s}
+.highlight{filter:drop-shadow(0 0 8px #f0b400) drop-shadow(0 0 2px #f0b400)}
+.dimmed{opacity:.28}
+.matchTag{font-size:16px;font-weight:700;fill:#111}
+@media(max-width:1000px){.compare{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Investigation 14 — Map the Systems</h1>
+<p class="sub">Compare the two systems after each has reached a new dynamic equilibrium.</p>
+
+<div class="compare">
+
+<div class="panel">
+<h2>Farmer John’s Bucket</h2>
+<svg viewBox="0 0 700 570" aria-label="Farmer John's familiar bucket at equilibrium after rust restriction">
+  <defs>
+    <clipPath id="bucketClip">
+      <path d="M182 211 L216 499 Q350 526 484 499 L518 211 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- exact familiar faucet -->
+  <path d="M160 42 H300 V92 H345" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M345 92 V126" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round"/>
+  <text x="145" y="24" font-size="18" font-weight="700">Water IN</text>
+  <g id="bucketIn" class="map-target"><rect x="333" y="126" width="24" height="102" rx="10" fill="#60a5fa" opacity=".85"/><text x="365" y="175" font-size="15" font-weight="700">WATER IN</text></g>
+
+  <!-- exact familiar bucket body -->
+  <path d="M175 205 L210 505 Q350 535 490 505 L525 205" fill="#e2e8f0" stroke="#475569" stroke-width="7"/>
+  <!-- final higher equilibrium water level -->
+  <rect x="180" y="252" width="340" height="278" fill="#93c5fd" clip-path="url(#bucketClip)"/>
+  <path d="M180 252 Q198 247 216 252 T252 252 T288 252 T324 252 T360 252 T396 252 T432 252 T468 252 T520 252"
+        fill="none" stroke="#2563eb" stroke-width="4" clip-path="url(#bucketClip)"/>
+
+  <!-- main outlet -->
+  <g id="bucketMainOut" class="map-target"><path d="M482 452 H605" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round"/>
+  <path class="flow" d="M605 452 Q645 455 680 485" fill="none" stroke="#60a5fa" stroke-width="12" stroke-linecap="round"/>
+  <text x="545" y="420" font-size="17" font-weight="700">Main outlet</text></g>
+
+  <!-- rust is already present -->
+  <g id="bucketRust" class="map-target">
+    <circle cx="492" cy="444" r="8" fill="#92400e"/>
+    <circle cx="500" cy="457" r="7" fill="#b45309"/>
+    <circle cx="510" cy="447" r="6" fill="#78350f"/>
+    <circle cx="518" cy="458" r="5" fill="#b45309"/>
+  </g>
+  <text x="545" y="492" font-size="16" font-weight="700" fill="#7c3f10">RUST RESTRICTS OUT</text>
+
+  <!-- level-dependent outlet already active -->
+  <g id="bucketAdditionalOut" class="map-target"><path d="M198 300 H96" fill="none" stroke="#64748b" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="200" cy="300" r="13" fill="#475569"/>
+  <path class="flow" d="M95 300 Q58 305 25 340" fill="none" stroke="#38bdf8" stroke-width="10" stroke-linecap="round"/>
+  <text x="22" y="265" font-size="15" font-weight="700">Level-dependent outlet</text>
+  <text x="22" y="283" font-size="12" fill="#64748b">active at higher water level</text></g>
+</svg>
+<div class="eq">SYSTEM IN EQUILIBRIUM</div>
+</div>
+
+<div class="panel">
+<h2>Earth–Sun Energy System</h2>
+<svg viewBox="0 0 1100 620" aria-label="Earth energy system at a warmer equilibrium">
+  <defs>
+    <marker id="smallArrow" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L5,2.5 L0,5 Z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <text x="925" y="55" font-size="20" font-weight="bold">SPACE</text>
+  <g id="earthSun" class="map-target"><circle cx="120" cy="280" r="65" fill="#f4d34f" stroke="#555" stroke-width="2"/>
+  <text x="120" y="287" text-anchor="middle" font-size="22" font-weight="bold">SUN</text></g>
+
+  <ellipse cx="650" cy="305" rx="265" ry="245" fill="none" stroke="#666" stroke-width="3" stroke-dasharray="12 10"/>
+  <text x="650" y="48" text-anchor="middle" font-size="20" font-weight="bold">EARTH-SYSTEM BOUNDARY</text>
+
+  <circle cx="650" cy="315" r="135" fill="#e8edf1" stroke="#555" stroke-width="3"/>
+  <circle cx="650" cy="315" r="103" fill="#d8e4d3" stroke="#777" stroke-width="1.5"/>
+  <text x="650" y="322" text-anchor="middle" font-size="23" font-weight="bold">EARTH SYSTEM</text>
+
+  <!-- energy in -->
+  <path class="flow" d="M195 280 H470" fill="none" stroke="#d2a600" stroke-width="8" stroke-linecap="round"/>
+  <polygon points="444,268 472,280 444,292" fill="#d2a600"/>
+  <text x="330" y="250" text-anchor="middle" font-size="18" font-weight="bold">ENERGY IN</text>
+  <text x="330" y="271" text-anchor="middle" font-size="15">incoming solar energy</text>
+
+  <!-- restricted original outgoing pathway -->
+  <g id="earthMainOut" class="map-target"><path class="flow" d="M775 245 Q875 185 980 145" fill="none" stroke="#8d69a5" stroke-width="8" stroke-linecap="round"/>
+  <polygon points="952,140 982,145 960,163" fill="#8d69a5"/>
+  <text x="870" y="205" text-anchor="middle" font-size="18" font-weight="bold">ENERGY OUT</text>
+  <g id="earthRestricted" class="map-target"><text x="870" y="226" text-anchor="middle" font-size="15">restricted energy-loss pathway</text></g></g>
+
+  <!-- additional level-response output; smaller clean arrowhead -->
+  <g id="earthAdditionalOut" class="map-target"><path class="flow" d="M760 365 C835 385 900 410 945 435"
+        fill="none" stroke="#666" stroke-width="8" stroke-linecap="round"
+        marker-end="url(#smallArrow)"/>
+  <text x="810" y="400" font-size="17" font-weight="700">ADDITIONAL ENERGY OUT</text>
+  <text x="825" y="422" font-size="14">increases as Earth warms</text>
+  <text x="948" y="466" font-size="14" font-weight="700">TO SPACE</text></g>
+
+  <!-- stored energy shown visually only -->
+  <rect x="515" y="500" width="270" height="42" rx="8" fill="#eee" stroke="#777"/>
+  <rect x="517" y="502" width="220" height="38" rx="6" fill="#bbb"/>
+  <text x="650" y="570" text-anchor="middle" font-size="17" font-weight="bold">MORE ENERGY STORED</text>
+</svg>
+<div class="eq">SYSTEM IN EQUILIBRIUM</div>
+</div>
+
+</div>
+
+<div class="prompt">
+<b>Map the systems one connection at a time.</b><br>
+Use each button to highlight the matching parts of the Earth-energy system and Farmer John’s bucket.
+</div>
+
+<div class="controls">
+  <button class="mapStep" data-earth="earthSun" data-bucket="bucketIn" data-text="Sun / incoming solar energy ↔ Water IN">MAP SUN</button>
+  <button class="mapStep" data-earth="earthMainOut" data-bucket="bucketMainOut" data-text="Energy OUT to space ↔ Main water outlet">MAP ENERGY OUT</button>
+  <button class="mapStep" data-earth="earthRestricted" data-bucket="bucketRust" data-text="Restricted Energy OUT ↔ Rust restricting the main outlet">MAP RESTRICTED ENERGY OUT</button>
+  <button class="mapStep" data-earth="earthAdditionalOut" data-bucket="bucketAdditionalOut" data-text="Additional Energy OUT as Earth warms ↔ Level-dependent outlet at higher water level">MAP ADDITIONAL ENERGY OUT</button>
+  <button id="clearBtn">CLEAR MAP</button>
+</div>
+
+<div id="mapMessage" class="eq" style="max-width:850px;margin-top:14px">Choose a mapping button.</div>
+
+<div class="prompt" style="margin-top:14px">
+<b>Final question:</b> In Farmer John’s bucket, rust restricts the outlet. What could restrict Earth’s effective energy loss to space?
+</div>
+</div>
+
+<script>
+const allTargets=[...document.querySelectorAll('.map-target')];
+const msg=document.getElementById('mapMessage');
+
+function clearHighlights(){
+  allTargets.forEach(el=>{
+    el.classList.remove('highlight','dimmed');
+  });
+}
+
+document.querySelectorAll('.mapStep').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    clearHighlights();
+    allTargets.forEach(el=>el.classList.add('dimmed'));
+    const earth=document.getElementById(btn.dataset.earth);
+    const bucket=document.getElementById(btn.dataset.bucket);
+    [earth,bucket].forEach(el=>{
+      if(el){
+        el.classList.remove('dimmed');
+        el.classList.add('highlight');
+      }
+    });
+    msg.textContent=btn.dataset.text;
+  });
+});
+
+document.getElementById('clearBtn').addEventListener('click',()=>{
+  clearHighlights();
+  msg.textContent='Choose a mapping button.';
+});
+</script>
+</body>
+</html>
