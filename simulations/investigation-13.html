@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Investigation 13 — When Earth's Energy Balance Changes</title>
+<style>
+body{margin:0;background:#f3f3f3;font-family:Arial,Helvetica,sans-serif;color:#222}
+.wrap{max-width:1120px;margin:18px auto;background:#fff;border:1px solid #bbb;padding:18px 22px}
+h1{text-align:center;margin:0 0 5px;font-size:28px}.sub{text-align:center;margin-bottom:12px}
+svg{width:100%;height:auto;border:1px solid #ccc;background:#fff}
+.controls{text-align:center;margin:13px 0}button{padding:10px 15px;margin:4px;font-weight:bold;font-size:15px;border:2px solid #333;border-radius:6px;background:#fff;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.metric{text-align:center;border:1px solid #aaa;padding:9px;background:#fafafa}.metric b{display:block;font-size:13px}.v{font-size:22px;font-weight:bold}
+.status{margin-top:11px;padding:11px;border:1px solid #aaa;background:#fafafa;text-align:center;font-weight:bold;min-height:44px}
+@media(max-width:700px){.metrics{grid-template-columns:1fr 1fr}}
+</style>
+<style>
+@keyframes responseFlow {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -76; }
+}
+#responsePath { animation: responseFlow 1.2s linear infinite; }
+</style>
+
+</head>
+<body><div class="wrap">
+<h1>Investigation 13 — The Earth as an Energy System</h1>
+<div class="sub">Watch energy enter, accumulate in storage, and then leave until the whole Earth system reaches dynamic equilibrium.</div>
+
+<svg viewBox="0 0 1060 600" aria-label="Simple whole-Earth energy balance model">
+<defs>
+  <marker id="responseArrow" markerWidth="8" markerHeight="8"
+          refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,4 L0,8 Z" fill="#666"/>
+  </marker>
+</defs>
+
+  <text x="925" y="55" font-size="20" font-weight="bold">SPACE</text>
+  <circle cx="120" cy="280" r="65" fill="#f4d34f" stroke="#555" stroke-width="2"/>
+  <text x="120" y="287" text-anchor="middle" font-size="22" font-weight="bold">SUN</text>
+
+  <ellipse cx="650" cy="305" rx="265" ry="245" fill="none" stroke="#666" stroke-width="3" stroke-dasharray="12 10"/>
+  <text x="650" y="48" text-anchor="middle" font-size="20" font-weight="bold">EARTH-SYSTEM BOUNDARY</text>
+
+  <circle cx="650" cy="315" r="135" fill="#e8edf1" stroke="#555" stroke-width="3"/>
+  <circle cx="650" cy="315" r="103" fill="#d8e4d3" stroke="#777" stroke-width="1.5"/>
+  <text x="650" y="322" text-anchor="middle" font-size="23" font-weight="bold">EARTH SYSTEM</text>
+  <text x="650" y="350" text-anchor="middle" font-size="16">treated first as one whole system</text>
+
+  <!-- incoming -->
+  <path d="M195 280 H470" fill="none" stroke="#777" stroke-width="15" stroke-linecap="round" opacity=".25"/>
+  <path id="inFlow" d="M195 280 H470" fill="none" stroke="#d2a600" stroke-width="8" stroke-dasharray="18 14" stroke-linecap="round" opacity="0"/>
+  <polygon id="inArrow" points="444,268 472,280 444,292" fill="#d2a600" opacity="0"/>
+  <text id="inLabel" x="330" y="250" text-anchor="middle" font-size="18" font-weight="bold" opacity="0">ENERGY IN</text>
+  <text id="inSub" x="330" y="271" text-anchor="middle" font-size="15" opacity="0">incoming solar energy</text>
+
+  <!-- outgoing -->
+  <path d="M775 245 Q875 185 980 145" fill="none" stroke="#777" stroke-width="15" stroke-linecap="round" opacity=".25"/>
+  <path id="outFlow" d="M775 245 Q875 185 980 145" fill="none" stroke="#8d69a5" stroke-width="8" stroke-dasharray="18 14" stroke-linecap="round" opacity="0"/>
+  <polygon id="outArrow" points="952,140 982,145 960,163" fill="#8d69a5" opacity="0"/>
+  <text id="outLabel" x="870" y="205" text-anchor="middle" font-size="18" font-weight="bold" opacity="0">ENERGY OUT</text>
+  <text id="outSub" x="870" y="226" text-anchor="middle" font-size="15" opacity="0">outgoing radiation</text>
+
+  <!-- storage indicator -->
+  <rect x="515" y="500" width="270" height="42" rx="8" fill="#eee" stroke="#777"/>
+  <rect id="storeBar" x="517" y="502" width="133" height="38" rx="6" fill="#bbb"/>
+  <text x="650" y="570" text-anchor="middle" font-size="17" font-weight="bold">ENERGY STORED WITHIN EARTH SYSTEM</text>
+
+  <!-- Level-response energy-loss pathway: appears only after the prediction pause -->
+  <g id="responseStream" style="display:none">
+    <path id="responsePath" d="M 760 365 C 835 385, 900 410, 965 445"
+          fill="none" stroke="#666" stroke-width="11" stroke-linecap="round"
+          stroke-dasharray="20 18" marker-end="url(#responseArrow)"/>
+    <text x="805" y="402" font-size="18" font-weight="700">ADDITIONAL ENERGY OUT</text>
+    <text x="835" y="426" font-size="15">increases as Earth warms</text>
+    <text x="930" y="478" font-size="15" font-weight="700">TO SPACE</text>
+  </g>
+
+</svg>
+
+<div class="controls">
+<button id="inputBtn">TURN ON ENERGY IN</button>
+<button id="outputBtn" disabled>TURN ON ENERGY OUT</button>
+<button id="reduceOutBtn" disabled>RESTRICT ENERGY OUT</button>
+        <button id="responseBtn" disabled>ALLOW EARTH TO RESPOND</button>
+        <button id="resetBtn">RESET</button>
+</div>
+
+<div class="metrics">
+<div class="metric"><b>Energy IN</b><span id="inVal" class="v">0</span></div>
+<div class="metric"><b>Energy OUT</b><span id="outVal" class="v">0</span></div>
+<div class="metric"><b>System balance</b><span id="netVal" class="v">No flow</span></div>
+<div class="metric"><b>Relative stored energy</b><span id="storeVal" class="v">0</span></div>
+</div>
+<div id="status" class="status">The storage indicator begins at 0 so you can watch energy accumulate visually. Turn on energy IN first.</div>
+</div>
+
+<script>
+const inputBtn=document.getElementById('inputBtn');
+const outputBtn=document.getElementById('outputBtn');
+const resetBtn=document.getElementById('resetBtn');
+
+const inFlow=document.getElementById('inFlow');
+const inArrow=document.getElementById('inArrow');
+const inLabel=document.getElementById('inLabel');
+const inSub=document.getElementById('inSub');
+
+const outFlow=document.getElementById('outFlow');
+const outArrow=document.getElementById('outArrow');
+const outLabel=document.getElementById('outLabel');
+const outSub=document.getElementById('outSub');
+
+const inVal=document.getElementById('inVal');
+const outVal=document.getElementById('outVal');
+const netVal=document.getElementById('netVal');
+const storeVal=document.getElementById('storeVal');
+const status=document.getElementById('status');
+const storeBar=document.getElementById('storeBar');
+
+let incoming=0;
+let outgoing=0;
+let stored=0;
+let mode='idle';
+let last=performance.now();
+
+function vis(arr,on){arr.forEach(e=>e.setAttribute('opacity',on?1:0));}
+
+function update(){
+  inVal.textContent=incoming.toFixed(0);
+  outVal.textContent=outgoing.toFixed(0);
+
+  const diff=incoming-outgoing;
+  if(incoming===0 && outgoing===0){
+    netVal.textContent='No flow';
+  } else if(Math.abs(diff)<1){
+    netVal.textContent='Balanced';
+  } else if(diff>0){
+    netVal.textContent='Gaining energy';
+  } else {
+    netVal.textContent='Losing energy';
+  }
+
+  storeVal.textContent=stored.toFixed(0);
+  storeBar.setAttribute('width',Math.max(0,266*stored/100));
+}
+
+function frame(t){
+  const dt=Math.min(.05,(t-last)/1000);
+  last=t;
+
+  inFlow.setAttribute('stroke-dashoffset',String(-(t/24)%64));
+  outFlow.setAttribute('stroke-dashoffset',String(-(t/24)%64));
+
+  if(mode==='filling'){
+    // Sun is on; energy enters faster than it leaves, so storage rises.
+    stored += 9*dt;
+    if(stored>=75){
+      stored=75;
+      mode='paused75';
+      outputBtn.disabled=false;
+      status.textContent='Stored energy has increased to 75. The system pauses here. Now turn on energy OUT and watch how the stored energy changes.';
+    }
+    update();
+  }
+  else if(mode==='draining'){
+    // Outgoing energy temporarily exceeds incoming energy, so storage decreases.
+    stored -= 8*dt;
+
+    // As the system approaches 50, outgoing energy adjusts toward the incoming rate.
+    outgoing = 100 + Math.max(0,(stored-50))*1.6;
+
+    if(stored<=50){
+      stored=50;
+      outgoing=100;
+      mode='equilibrium';
+      status.textContent='Dynamic equilibrium: energy is continuously entering and leaving, but ENERGY IN = ENERGY OUT. Stored energy remains constant at 50.';
+    }
+    update();
+  }
+
+  requestAnimationFrame(frame);
+}
+
+inputBtn.onclick=()=>{
+  incoming=100;
+  outgoing=0;
+  mode='filling';
+  vis([inFlow,inArrow,inLabel,inSub],true);
+  inputBtn.disabled=true;
+  status.textContent='The Sun is on. Energy crosses the Earth-system boundary inward, so the storage bar fills—just like water accumulating in Farmer John’s tank.';
+  update();
+};
+
+outputBtn.onclick=()=>{
+  mode='draining';
+  outgoing=140;
+  vis([outFlow,outArrow,outLabel,outSub],true);
+  outputBtn.disabled=true;
+  status.textContent='Energy is now leaving the Earth system to space faster than it is entering, so stored energy decreases toward a balanced state.';
+  update();
+};
+
+resetBtn.onclick=()=>{
+  incoming=0;
+  outgoing=0;
+  stored=0;
+  mode='idle';
+  vis([inFlow,inArrow,inLabel,inSub,outFlow,outArrow,outLabel,outSub],false);
+  inputBtn.disabled=false;
+  outputBtn.disabled=true;
+  status.textContent='The storage indicator begins at 0 so you can watch energy accumulate visually. Turn on energy IN first.';
+  update();
+};
+
+update();
+requestAnimationFrame(frame);
+</script>
+<div id="predictionBox" style="display:none; margin:18px auto; max-width:900px; padding:16px 18px; border:2px solid #555; border-radius:10px; background:white;">
+  <b>Prediction Point</b><br>
+  Energy IN is still 100, but Energy OUT has been reduced to 80. The Earth system is gaining energy and stored energy is rising.<br><br>
+  <b>What would have to happen for this system to reach dynamic equilibrium again?</b>
+</div>
+
+
+<script>
+(function(){
+  const reduceBtn = document.getElementById('reduceOutBtn');
+  const predictionBox = document.getElementById('predictionBox');
+  if(!reduceBtn) return;
+
+  let forcingActive = false;
+  let stoppedAtPrediction = false;
+
+  // Investigation 13 begins only after students establish the familiar 100/100,
+  // stored-energy 50 dynamic equilibrium from Investigation 12.
+  const watcher = setInterval(() => {
+    if (typeof incoming === 'undefined' || typeof outgoing === 'undefined' || typeof stored === 'undefined') return;
+
+    if (!forcingActive && Math.abs(incoming-100) < 1 && Math.abs(outgoing-100) < 1 && Math.abs(stored-50) < 1) {
+      reduceBtn.disabled = false;
+      reduceBtn.classList.add('ready');
+    }
+
+    if (forcingActive && !stoppedAtPrediction) {
+      // Hold the imposed forcing: incoming stays fixed while outgoing is reduced.
+      incoming = 100;
+      outgoing = 80;
+
+      // Stop automatically once enough storage change is visible.
+      if (stored >= 68) {
+        stored = 68;
+        stoppedAtPrediction = true;
+        if (typeof mode !== 'undefined') mode = 'paused';
+        if (typeof update === 'function') update();
+        reduceBtn.disabled = true;
+        if (predictionBox) predictionBox.style.display = 'block';
+
+        const statusCandidates = [
+          document.getElementById('status'),
+          document.getElementById('statusText'),
+          document.querySelector('.status')
+        ].filter(Boolean);
+        if(statusCandidates.length){
+          statusCandidates[0].textContent =
+            'PAUSED FOR PREDICTION: Energy IN is greater than Energy OUT, so the Earth system has gained stored energy. What must change for dynamic equilibrium to be restored?';
+        }
+      }
+    }
+  }, 50);
+
+  reduceBtn.addEventListener('click', () => {
+    forcingActive = true;
+    reduceBtn.disabled = true;
+    incoming = 100;
+    outgoing = 80;
+
+    // Reuse the baseline animation loop if available; otherwise advance storage here.
+    if (typeof mode !== 'undefined') mode = 'forcing';
+
+    const localRise = setInterval(() => {
+      if (!forcingActive || stoppedAtPrediction) {
+        clearInterval(localRise);
+        return;
+      }
+      // Only add our own rise if the baseline loop is not already changing storage.
+      if (stored < 68) {
+        stored = Math.min(68, stored + 0.08);
+        if (typeof update === 'function') update();
+      }
+    }, 30);
+
+    const statusCandidates = [
+      document.getElementById('status'),
+      document.getElementById('statusText'),
+      document.querySelector('.status')
+    ].filter(Boolean);
+    if(statusCandidates.length){
+      statusCandidates[0].textContent =
+        'The system’s energy-loss pathway has been restricted while Energy IN remains unchanged. Watch what happens to stored energy.';
+    }
+  });
+})();
+</script>
+
+
+<script>
+(function(){
+  const responseBtn = document.getElementById('responseBtn');
+  const predictionBox = document.getElementById('predictionBox');
+  const responseStream = document.getElementById('responseStream');
+  if(!responseBtn) return;
+
+  let responding = false;
+
+  // Enable the response only when the prediction point has been reached.
+  const enableWatch = setInterval(() => {
+    if (typeof stored === 'undefined' || typeof incoming === 'undefined' || typeof outgoing === 'undefined') return;
+    if (!responding && stored >= 67.9 && Math.abs(incoming-100)<1 && Math.abs(outgoing-80)<1) {
+      responseBtn.disabled = false;
+    }
+  }, 100);
+
+  responseBtn.addEventListener('click', () => {
+    responding = true;
+    responseBtn.disabled = true;
+    if(predictionBox) predictionBox.style.display='none';
+    if(responseStream) responseStream.style.display='block';
+
+    // Prevent the V13.1 forcing watcher from continuing to hold OUT at 80 by
+    // visually/behaviorally taking over the response stage.
+    const statusCandidates = [
+      document.getElementById('status'),
+      document.getElementById('statusText'),
+      document.querySelector('.status')
+    ].filter(Boolean);
+    if(statusCandidates.length){
+      statusCandidates[0].textContent =
+        'As stored energy increases, Earth warms. A warmer Earth emits more thermal radiation to space, increasing total Energy OUT.';
+    }
+
+    let localOut = 80;
+    let localStored = Math.max(68, stored);
+
+    const timer = setInterval(() => {
+      // Rise toward a higher equilibrium state while the additional response
+      // pathway progressively restores total outgoing energy.
+      localStored = Math.min(82, localStored + 0.055);
+      localOut = Math.min(100, 80 + (localStored-68) * (20/14));
+
+      stored = localStored;
+      incoming = 100;
+      outgoing = localOut;
+
+      // Update the visible metrics directly in case the earlier forcing loop
+      // attempts to hold the old values.
+      const inEl=document.getElementById('inVal');
+      const outEl=document.getElementById('outVal');
+      const netEl=document.getElementById('netVal');
+      const storeEl=document.getElementById('storeVal');
+      const bar=document.getElementById('storeBar');
+      if(inEl) inEl.textContent='100';
+      if(outEl) outEl.textContent=Math.round(localOut).toString();
+      if(storeEl) storeEl.textContent=Math.round(localStored).toString();
+      if(netEl) netEl.textContent = localOut >= 99.5 ? 'Balanced' : 'Gaining energy';
+      if(bar) bar.setAttribute('width', Math.max(0,266*localStored/100));
+
+      if(localOut >= 100){
+        clearInterval(timer);
+        stored=82; incoming=100; outgoing=100;
+        if(inEl) inEl.textContent='100';
+        if(outEl) outEl.textContent='100';
+        if(storeEl) storeEl.textContent='82';
+        if(netEl) netEl.textContent='Balanced';
+        if(bar) bar.setAttribute('width',266*0.82);
+        if(statusCandidates.length){
+          statusCandidates[0].textContent =
+            'NEW DYNAMIC EQUILIBRIUM: Energy IN = Energy OUT again, but the Earth system now has more stored energy and is warmer.';
+        }
+      }
+    }, 45);
+  });
+})();
+</script>
+
+</body></html>
