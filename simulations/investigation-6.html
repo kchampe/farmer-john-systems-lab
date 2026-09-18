@@ -12,6 +12,7 @@
 .sim{height:570px;overflow:hidden;background:linear-gradient(#fff,#f8fafc)}svg{width:100%;height:100%;display:block}
 .row{display:flex;gap:8px;align-items:center;justify-content:space-between}button{border:1px solid #94a3b8;background:#fff;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer}
 button:hover{background:#f1f5f9}.rain{width:100%;margin-top:14px;padding:12px}.readout{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+.start{width:100%;margin-bottom:12px;padding:12px;background:#e8f5ff;border:2px solid #2677a8}
 .metric{display:flex;justify-content:space-between;gap:10px;padding:7px 0}.metric span:first-child{color:#475569}
 .status{margin-top:13px;padding:12px;background:var(--panel);border-radius:9px;min-height:74px;line-height:1.4}
 .instructions{font-size:14px;line-height:1.45;color:#475569;margin-top:14px}
@@ -33,15 +34,15 @@ button:hover{background:#f1f5f9}.rain{width:100%;margin-top:14px;padding:12px}.r
 <svg viewBox="0 0 700 570" aria-label="Water tank with an emergency siphon on the left and normal outlet near the bottom right">
   <!-- inlet -->
   <path d="M275 45 H365 V92 H410 V130" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect id="inStream" x="399" y="130" width="22" height="100" rx="10" fill="#60a5fa" opacity=".88"/>
+  <rect id="inStream" x="399" y="130" width="22" height="375" rx="10" fill="#60a5fa" opacity="0"/>
   <text x="285" y="26" font-size="18" font-weight="700">Water IN</text>
 
   <!-- tank -->
   <path d="M175 205 L210 505 Q350 535 490 505 L525 205" fill="#e2e8f0" stroke="#475569" stroke-width="7"/>
   <clipPath id="clip"><path d="M182 211 L216 499 Q350 526 484 499 L518 211 Z"/></clipPath>
-  <rect id="water" x="180" y="350" width="340" height="180" fill="#93c5fd" clip-path="url(#clip)"/>
+  <rect id="water" x="180" y="505" width="340" height="24" fill="#93c5fd" clip-path="url(#clip)"/>
   <path id="wave" fill="none" stroke="#2563eb" stroke-width="4" clip-path="url(#clip)"/>
-  <rect id="inStreamFront" x="399" y="130" width="22" height="220" rx="10" fill="#60a5fa" opacity=".88" clip-path="url(#clip)"/>
+  <rect id="inStreamFront" x="399" y="130" width="22" height="375" rx="10" fill="#60a5fa" opacity="0" clip-path="url(#clip)"/>
 
   <!-- emergency siphon on opposite side -->
   <path d="M255 400 V280 Q255 258 233 258 H170 Q145 258 145 285 V390"
@@ -59,46 +60,49 @@ button:hover{background:#f1f5f9}.rain{width:100%;margin-top:14px;padding:12px}.r
 
   <!-- normal outlet moved lower -->
   <path d="M488 475 H610" fill="none" stroke="#64748b" stroke-width="28" stroke-linecap="round"/>
-  <path d="M610 475 Q650 478 682 512" fill="none" stroke="#60a5fa" stroke-width="18" stroke-linecap="round" opacity=".85"/>
+  <path id="normalStream" d="M610 475 Q650 478 682 512" fill="none" stroke="#60a5fa" stroke-width="0" stroke-linecap="round" opacity="0"/>
   <text x="532" y="443" font-size="16" font-weight="700">Normal OUT</text>
 
-  <text id="levelTxt" x="355" y="410" text-anchor="middle" font-size="25" font-weight="700">55% stored</text>
+  <text id="levelTxt" x="355" y="410" text-anchor="middle" font-size="25" font-weight="700">0% stored</text>
 </svg>
 </div>
 
 <div class="card">
+<button class="start" id="startBtn">TURN ON WATER</button>
 <div class="row"><button id="pause">Pause</button><button id="reset">Reset</button></div>
 
-<div class="instructions"><b>Starting condition:</b> Water IN = 5 units/s and Normal OUT = 5 units/s. The tank begins in dynamic equilibrium.</div>
+<div class="instructions"><b>Starting condition:</b> The tank begins empty. Turn on the water and establish equilibrium before adding rainfall.</div>
 
 <button class="rain" id="rainBtn">ADD RAINFALL TEST</button>
 <div class="instructions">Each click increases Water IN by 0.5 units/s. Add rainfall gradually and watch the water level and siphon.</div>
 
 <div class="readout">
-<div class="metric"><span>Water stored</span><strong id="stored">55%</strong></div>
-<div class="metric"><span>Water IN</span><strong id="inRead">5.0 units/s</strong></div>
-<div class="metric"><span>Normal OUT</span><strong>5.0 units/s</strong></div>
+<div class="metric"><span>Water stored</span><strong id="stored">0%</strong></div>
+<div class="metric"><span>Water IN</span><strong id="inRead">0.0 units/s</strong></div>
+<div class="metric"><span>Normal OUT</span><strong id="normalRead">0.0 units/s</strong></div>
 <div class="metric"><span>Emergency siphon OUT</span><strong id="siphonRead">0.0 units/s</strong></div>
-<div class="metric"><span>Total water leaving</span><strong id="totalOut">5.0 units/s</strong></div>
+<div class="metric"><span>Total water leaving</span><strong id="totalOut">0.0 units/s</strong></div>
 <div class="metric"><span>Net change in storage</span><strong id="net">0.0 units/s</strong></div>
 </div>
 
-<div class="status" id="status">The tank is in dynamic equilibrium. The siphon is inactive.</div>
+<div class="status" id="status">The tank is empty. Turn on the water to establish the initial equilibrium.</div>
 </div>
 </div>
 </div>
 
 <script>
 (()=>{
-const start=.55, normalOut=5, trigger=.84, siphonStop=.36, siphonOut=4.2, speed=.014;
-let level=start,input=5,active=false,paused=false,last=performance.now();
+const start=.50, normalOut=5, trigger=.84, siphonStop=.36, siphonOut=4.2, speed=.014;
+let level=0,input=0,active=false,paused=false,systemOn=false,startup=true,last=performance.now();
 const $=id=>document.getElementById(id);
 
 function state(){
   if(!active && level>=trigger) active=true;
   if(active && level<=siphonStop) active=false;
   const siph=active?siphonOut:0;
-  return {siph,totalOut:normalOut+siph,net:input-(normalOut+siph)};
+  let normal=0;
+  if(systemOn&&level>.18) normal=startup?normalOut*Math.max(0,Math.min(1,(level-.18)/(start-.18))):normalOut;
+  return {normal,siph,totalOut:normal+siph,net:input-(normal+siph)};
 }
 function draw(s,now){
  const top=211,bottom=505,y=bottom-level*(bottom-top);
@@ -120,10 +124,15 @@ function draw(s,now){
  $("inStreamFront").setAttribute("width",iw);
  $("inStreamFront").setAttribute("x",410-iw/2);
  $("inStreamFront").setAttribute("height",Math.max(18,y-130));
+ $("inStream").setAttribute("opacity",input>0?".88":"0");
+ $("inStreamFront").setAttribute("opacity",input>0?".88":"0");
+ $("normalStream").setAttribute("stroke-width",s.normal>0?5+s.normal*2.6:0);
+ $("normalStream").setAttribute("opacity",s.normal>0?".85":"0");
 
  $("stored").textContent=Math.round(level*100)+"%";
  $("levelTxt").textContent=Math.round(level*100)+"% stored";
  $("inRead").textContent=input.toFixed(1)+" units/s";
+ $("normalRead").textContent=s.normal.toFixed(1)+" units/s";
  $("siphonRead").textContent=s.siph.toFixed(1)+" units/s";
  $("totalOut").textContent=s.totalOut.toFixed(1)+" units/s";
  $("net").textContent=(s.net>=0?"+":"")+s.net.toFixed(1)+" units/s";
@@ -139,7 +148,10 @@ function draw(s,now){
  $("siphonJet").setAttribute("opacity",active?".95":"0");
 
  let msg;
- if(active) msg="The siphon is running. It will continue until the water falls below the siphon intake.";
+ if(!systemOn) msg="The tank is empty. Turn on the water to establish the initial equilibrium.";
+ else if(startup&&level<.18) msg="Water is entering and accumulating. The level has not yet reached the normal outlet.";
+ else if(startup) msg="Water is entering and leaving while storage rises. Watch the two flow rates approach one another.";
+ else if(active) msg="The siphon is running. It will continue until the water falls below the siphon intake.";
  else if(input===5) msg="The tank is in dynamic equilibrium. The siphon is inactive.";
  else if(level<trigger-.07) msg="Rainfall has increased. The water level is rising gradually, but the siphon remains inactive.";
  else msg="The water level is approaching the siphon bend. Watch closely for a sudden change.";
@@ -149,15 +161,19 @@ function frame(now){
  const dt=Math.min(.05,(now-last)/1000);last=now;
  let s=state();
  if(!paused){
-   level+=s.net*dt*speed;
-   level=Math.max(.18,Math.min(.99,level));
+   level+=s.net*dt*(startup?.02:speed);
+   level=Math.max(0,Math.min(.99,level));
+   if(startup&&systemOn&&level>=.49){level=start;startup=false;$("startBtn").textContent="WATER ON — EQUILIBRIUM REACHED";$("rainBtn").disabled=false}
  }
  draw(state(),now);
  requestAnimationFrame(frame);
 }
-$("rainBtn").onclick=()=>{input=Math.min(8,input+.5)};
+$("startBtn").onclick=()=>{systemOn=true;input=5;$("startBtn").disabled=true;$("startBtn").textContent="WATER RUNNING";last=performance.now()};
+$("rainBtn").onclick=()=>{if(!startup)input=Math.min(8,input+.5)};
 $("pause").onclick=()=>{paused=!paused;$("pause").textContent=paused?"Resume":"Pause"};
-$("reset").onclick=()=>{level=start;input=5;active=false;paused=false;last=performance.now();$("pause").textContent="Pause"};
+$("reset").onclick=()=>{level=0;input=0;active=false;paused=false;systemOn=false;startup=true;last=performance.now();
+ $("startBtn").disabled=false;$("startBtn").textContent="TURN ON WATER";$("rainBtn").disabled=true;$("pause").textContent="Pause"};
+$("rainBtn").disabled=true;
 draw(state(),performance.now());
 requestAnimationFrame(frame);
 })();
